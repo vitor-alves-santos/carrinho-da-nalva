@@ -148,6 +148,12 @@ border-bottom: none;
     padding: 5%;
 }
 
+.kit{
+    border: 1px white solid;
+    background-color: rgba(18, 95, 126, 0.342);
+    padding: 05%;
+}
+
 .paragrafo-sanduiche{
     border-bottom: 1px solid #ccc;
 }
