@@ -198,7 +198,13 @@ export default function AdminPage() {
     return null;
   }
 
-  const ProductForm = ({ onSubmit, submitLabel }: { onSubmit: () => void; submitLabel: string }) => (
+  const ProductForm = ({
+    onSubmit,
+    submitLabel,
+  }: {
+    onSubmit: () => void;
+    submitLabel: string;
+  }) => (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>Categoria Principal</Label>
@@ -356,7 +362,10 @@ export default function AdminPage() {
                       Preencha os dados do novo produto
                     </DialogDescription>
                   </DialogHeader>
-                  <ProductForm onSubmit={handleAddProduto} submitLabel="Adicionar" />
+                  <ProductForm
+                    onSubmit={handleAddProduto}
+                    submitLabel="Adicionar"
+                  />
                 </DialogContent>
               </Dialog>
             </div>
@@ -367,11 +376,17 @@ export default function AdminPage() {
                   <div className="p-3 flex items-center justify-between">
                     <div className="flex-1">
                       <span className="font-medium">{produto.nome}</span>
-                      <span className={`ml-2 text-sm ${produto.ativo ? 'text-[#2d9da1]' : 'text-gray-400'}`}>
+                      <span
+                        className={`ml-2 text-sm ${
+                          produto.ativo ? "text-[#2d9da1]" : "text-gray-400"
+                        }`}
+                      >
                         {formatPrice(produto.preco)}
                       </span>
                       {!produto.ativo && (
-                        <span className="ml-2 text-xs text-red-500">(Inativo)</span>
+                        <span className="ml-2 text-xs text-red-500">
+                          (Inativo)
+                        </span>
                       )}
                     </div>
                     <div className="flex gap-1">
@@ -395,9 +410,13 @@ export default function AdminPage() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              Confirmar Exclusão
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Tem certeza que deseja excluir "{produto.nome}"? Esta ação não pode ser desfeita.
+                              Tem certeza que deseja excluir &quot;
+                              {produto.nome}&quot;? Esta ação não pode ser
+                              desfeita.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -442,7 +461,10 @@ export default function AdminPage() {
                     Preencha os dados do novo produto
                   </DialogDescription>
                 </DialogHeader>
-                <ProductForm onSubmit={handleAddProduto} submitLabel="Adicionar" />
+                <ProductForm
+                  onSubmit={handleAddProduto}
+                  submitLabel="Adicionar"
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -455,7 +477,10 @@ export default function AdminPage() {
             <DialogTitle>Editar Produto</DialogTitle>
             <DialogDescription>Atualize os dados do produto</DialogDescription>
           </DialogHeader>
-          <ProductForm onSubmit={handleEditProduto} submitLabel="Salvar Alterações" />
+          <ProductForm
+            onSubmit={handleEditProduto}
+            submitLabel="Salvar Alterações"
+          />
         </DialogContent>
       </Dialog>
     </div>

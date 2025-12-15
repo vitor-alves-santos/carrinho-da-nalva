@@ -6,6 +6,7 @@ import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
   produto: Produto;
@@ -35,7 +36,7 @@ export default function ProductCard({ produto }: ProductCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+      className="flex items-center justify-between py-1 border-b border-gray-100 last:border-b-0"
     >
       <div className="flex-1">
         <h3 className="font-medium text-gray-800">{produto.nome}</h3>
@@ -43,12 +44,18 @@ export default function ProductCard({ produto }: ProductCardProps) {
           <p className="text-xs text-gray-500 mt-0.5">{produto.descricao}</p>
         )}
       </div>
-      
+
       <div className="flex items-center gap-3">
-        <span className="text-[#2d9da1] font-semibold whitespace-nowrap">
+        <span
+          className={cn(
+            produto.categoriaPrincipal === "RECADOS"
+              ? "hidden"
+              : "text-[#2d9da1] font-semibold whitespace-nowrap"
+          )}
+        >
           {formatPrice(produto.preco)}
         </span>
-        
+
         {showControls ? (
           <div className="flex items-center gap-2">
             <Button
@@ -79,7 +86,11 @@ export default function ProductCard({ produto }: ProductCardProps) {
         ) : (
           <Button
             size="icon"
-            className="h-8 w-8 rounded-full bg-[#2d9da1] hover:bg-[#258487]"
+            className={cn(
+              produto.categoriaPrincipal === "RECADOS"
+                ? "hidden"
+                : "h-8 w-8 rounded-full bg-[#2d9da1] hover:bg-[#258487]"
+            )}
             onClick={() => setShowControls(true)}
           >
             <Plus className="h-4 w-4" />

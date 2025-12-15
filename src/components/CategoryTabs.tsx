@@ -15,7 +15,11 @@ export default function CategoryTabs({
 }: CategoryTabsProps) {
   return (
     <div className="sticky top-0 z-20 bg-white shadow-sm">
-      <Tabs value={activeCategory} onValueChange={onCategoryChange} className="w-full">
+      <Tabs
+        value={activeCategory}
+        onValueChange={onCategoryChange}
+        className="w-full"
+      >
         <TabsList className="w-full justify-start gap-2 h-auto p-2 bg-white overflow-x-auto flex-nowrap">
           {categories.map((category) => (
             <TabsTrigger
@@ -26,6 +30,7 @@ export default function CategoryTabs({
               {category === "BEBIDAS" && "🍺 "}
               {category === "PORÇÕES" && "🍤 "}
               {category === "COMBOS" && "🎁 "}
+              {category === "RECADOS" && "⚠️ "}
               {category}
             </TabsTrigger>
           ))}

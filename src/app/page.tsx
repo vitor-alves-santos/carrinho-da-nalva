@@ -19,11 +19,24 @@ export default function Home() {
         const response = await fetch("/api/produtos");
         const data = await response.json();
         setProdutos(data);
+
+        const uniqueCategories = [
+          ...new Set(data.map((p: Produto) => p.categoriaPrincipal)),
+        ] as string[];
+
+        const categoryOrder = ["RECADOS", "COMBOS", "BEBIDAS", "PORÇÕES"];
         
-        const uniqueCategories = [...new Set(data.map((p: Produto) => p.categoriaPrincipal))] as string[];
-        setCategories(uniqueCategories);
-        if (uniqueCategories.length > 0) {
-          setActiveCategory(uniqueCategories[0]);
+        const sortedCategories = uniqueCategories.sort((a, b) => {
+          const indexA = categoryOrder.indexOf(a);
+          const indexB = categoryOrder.indexOf(b);
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          return indexA - indexB;
+        });
+
+        setCategories(sortedCategories);
+        if (sortedCategories.length > 0) {
+          setActiveCategory(sortedCategories[0]);
         }
       } catch (error) {
         console.error("Error fetching produtos:", error);
