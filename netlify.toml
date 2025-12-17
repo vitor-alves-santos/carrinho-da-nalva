@@ -1,9 +1,7 @@
-# Configurações gerais (fallback)
+# Configuração para a Netlify tratar o projeto como um site Next.js
 [build]
-  command = "pnpm run build"
+  command = "next build"
   publish = ".next"
 
-# Configurações específicas para quando o Netlify buildar a branch v-1
-[context.v-1]
-  command = "pnpm run build"
-  publish = ".next"
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
