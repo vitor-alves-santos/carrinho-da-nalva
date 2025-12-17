@@ -39,6 +39,107 @@ import Link from "next/link";
 
 const CATEGORIAS_PRINCIPAIS = ["BEBIDAS", "PORÇÕES", "COMBOS"];
 
+const ProductForm = ({
+  formData,
+  setFormData,
+  onSubmit,
+  submitLabel,
+}: {
+  formData: Omit<Produto, "_id">;
+  setFormData: React.Dispatch<React.SetStateAction<Omit<Produto, "_id">>>;
+  onSubmit: () => void;
+  submitLabel: string;
+}) => (
+  <div className="space-y-4">
+    <div className="space-y-2">
+      <Label>Categoria Principal</Label>
+      <Select
+        value={formData.categoriaPrincipal}
+        onValueChange={(value) =>
+          setFormData({ ...formData, categoriaPrincipal: value })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {CATEGORIAS_PRINCIPAIS.map((cat) => (
+            <SelectItem key={cat} value={cat}>
+              {cat}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+    <div className="space-y-2">
+      <Label>Subcategoria</Label>
+      <Input
+        value={formData.subcategoria}
+        onChange={(e) =>
+          setFormData({ ...formData, subcategoria: e.target.value })
+        }
+        placeholder="Ex: Cervejas, Lanches..."
+      />
+    </div>
+    <div className="space-y-2">
+      <Label>Nome do Produto</Label>
+      <Input
+        value={formData.nome}
+        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+        placeholder="Ex: Brahma (lata)"
+      />
+    </div>
+    <div className="space-y-2">
+      <Label>Preço (R$)</Label>
+      <Input
+        type="number"
+        step="0.01"
+        value={formData.preco}
+        onChange={(e) =>
+          setFormData({ ...formData, preco: parseFloat(e.target.value) })
+        }
+        placeholder="0.00"
+      />
+    </div>
+    <div className="space-y-2">
+      <Label>Descrição (opcional)</Label>
+      <Input
+        value={formData.descricao}
+        onChange={(e) =>
+          setFormData({ ...formData, descricao: e.target.value })
+        }
+        placeholder="Descrição do produto..."
+      />
+    </div>
+    <div className="space-y-2">
+      <Label>Ordem de Exibição</Label>
+      <Input
+        type="number"
+        value={formData.ordem}
+        onChange={(e) =>
+          setFormData({ ...formData, ordem: parseInt(e.target.value) || 0 })
+        }
+      />
+    </div>
+    <div className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        id="ativo"
+        checked={formData.ativo}
+        onChange={(e) => setFormData({ ...formData, ativo: e.target.checked })}
+        className="rounded"
+      />
+      <Label htmlFor="ativo">Produto Ativo</Label>
+    </div>
+    <Button
+      className="w-full bg-[#2d9da1] hover:bg-[#258487]"
+      onClick={onSubmit}
+    >
+      {submitLabel}
+    </Button>
+  </div>
+);
+
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -52,7 +153,7 @@ export default function AdminPage() {
     categoriaPrincipal: "BEBIDAS",
     subcategoria: "",
     nome: "",
-    preco: "",
+    preco: 0,
     descricao: "",
     ativo: true,
     ordem: 0,
@@ -89,7 +190,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          preco: parseFloat(formData.preco),
+          preco: formData.preco,
         }),
       });
 
@@ -112,7 +213,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          preco: parseFloat(formData.preco),
+          preco: formData.preco,
         }),
       });
 
@@ -147,7 +248,7 @@ export default function AdminPage() {
       categoriaPrincipal: produto.categoriaPrincipal,
       subcategoria: produto.subcategoria,
       nome: produto.nome,
-      preco: produto.preco.toString(),
+      preco: produto.preco,
       descricao: produto.descricao,
       ativo: produto.ativo,
       ordem: produto.ordem,
@@ -160,7 +261,7 @@ export default function AdminPage() {
       categoriaPrincipal: activeCategory,
       subcategoria: "",
       nome: "",
-      preco: "",
+      preco: 0,
       descricao: "",
       ativo: true,
       ordem: 0,
@@ -197,103 +298,6 @@ export default function AdminPage() {
   if (!session) {
     return null;
   }
-
-  const ProductForm = ({
-    onSubmit,
-    submitLabel,
-  }: {
-    onSubmit: () => void;
-    submitLabel: string;
-  }) => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Categoria Principal</Label>
-        <Select
-          value={formData.categoriaPrincipal}
-          onValueChange={(value) =>
-            setFormData({ ...formData, categoriaPrincipal: value })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {CATEGORIAS_PRINCIPAIS.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label>Subcategoria</Label>
-        <Input
-          value={formData.subcategoria}
-          onChange={(e) =>
-            setFormData({ ...formData, subcategoria: e.target.value })
-          }
-          placeholder="Ex: Cervejas, Lanches..."
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Nome do Produto</Label>
-        <Input
-          value={formData.nome}
-          onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-          placeholder="Ex: Brahma (lata)"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Preço (R$)</Label>
-        <Input
-          type="number"
-          step="0.01"
-          value={formData.preco}
-          onChange={(e) => setFormData({ ...formData, preco: e.target.value })}
-          placeholder="0.00"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Descrição (opcional)</Label>
-        <Input
-          value={formData.descricao}
-          onChange={(e) =>
-            setFormData({ ...formData, descricao: e.target.value })
-          }
-          placeholder="Descrição do produto..."
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Ordem de Exibição</Label>
-        <Input
-          type="number"
-          value={formData.ordem}
-          onChange={(e) =>
-            setFormData({ ...formData, ordem: parseInt(e.target.value) || 0 })
-          }
-        />
-      </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="ativo"
-          checked={formData.ativo}
-          onChange={(e) =>
-            setFormData({ ...formData, ativo: e.target.checked })
-          }
-          className="rounded"
-        />
-        <Label htmlFor="ativo">Produto Ativo</Label>
-      </div>
-      <Button
-        className="w-full bg-[#2d9da1] hover:bg-[#258487]"
-        onClick={onSubmit}
-      >
-        {submitLabel}
-      </Button>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -363,6 +367,8 @@ export default function AdminPage() {
                     </DialogDescription>
                   </DialogHeader>
                   <ProductForm
+                    formData={formData}
+                    setFormData={setFormData}
                     onSubmit={handleAddProduto}
                     submitLabel="Adicionar"
                   />
@@ -462,6 +468,8 @@ export default function AdminPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <ProductForm
+                  formData={formData}
+                  setFormData={setFormData}
                   onSubmit={handleAddProduto}
                   submitLabel="Adicionar"
                 />
@@ -478,6 +486,8 @@ export default function AdminPage() {
             <DialogDescription>Atualize os dados do produto</DialogDescription>
           </DialogHeader>
           <ProductForm
+            formData={formData}
+            setFormData={setFormData}
             onSubmit={handleEditProduto}
             submitLabel="Salvar Alterações"
           />
