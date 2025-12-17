@@ -39,45 +39,47 @@ export default function ProductCard({ produto }: ProductCardProps) {
       className="flex items-center justify-between py-1 border-b border-gray-100 last:border-b-0"
     >
       <div className="flex-1">
-        <h3 className="font-medium text-gray-800">{produto.nome}</h3>
+        <h3 className="font-medium text-[smaller] text-gray-800">
+          {produto.nome}
+        </h3>
         {produto.descricao && (
           <p className="text-xs text-gray-500 mt-0.5">{produto.descricao}</p>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1">
         <span
           className={cn(
             produto.categoriaPrincipal === "RECADOS"
               ? "hidden"
-              : "text-[#2d9da1] font-semibold whitespace-nowrap"
+              : "text-[#2d9da1] text-[14px] font-semibold whitespace-nowrap"
           )}
         >
           {formatPrice(produto.preco)}
         </span>
 
         {showControls ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button
               size="icon"
               variant="outline"
-              className="h-7 w-7 rounded-full"
+              className="h-6 w-6 rounded-full"
               onClick={() => setQuantidade(Math.max(1, quantidade - 1))}
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <span className="w-6 text-center font-medium">{quantidade}</span>
+            <span className=" text-center font-medium">{quantidade}</span>
             <Button
               size="icon"
               variant="outline"
-              className="h-7 w-7 rounded-full"
+              className="h-6 w-6 rounded-full"
               onClick={() => setQuantidade(quantidade + 1)}
             >
               <Plus className="h-3 w-3" />
             </Button>
             <Button
               size="sm"
-              className="bg-[#2d9da1] hover:bg-[#258487] text-white rounded-full px-3 h-7 text-xs"
+              className="bg-[#2d9da1] hover:bg-[#258487] text-white rounded-full px-2 h-7 text-[10px]"
               onClick={handleAdd}
             >
               Adicionar
