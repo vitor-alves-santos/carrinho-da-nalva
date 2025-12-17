@@ -4,7 +4,12 @@ import { auth } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const { db } = await connectToDatabase();
+    const connection = await connectToDatabase();
+    if (!connection) {
+      console.error("MONGO_DB_CONNECTION", "connectToDatabase returned undefined or null");
+      throw new Error("Failed to connect to database, connection object is null or undefined.");
+    }
+    const { db } = connection;
     const produtos = await db
       .collection("produtos")
       .find({ ativo: true })
