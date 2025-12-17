@@ -5,8 +5,6 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Produto } from "@/types/produto";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
@@ -27,118 +25,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ArrowLeft, Plus, Pencil, Trash2, LogOut } from "lucide-react";
 import Link from "next/link";
+import ProductForm from "@/components/ProductForm";
 
-const CATEGORIAS_PRINCIPAIS = ["BEBIDAS", "PORÇÕES", "COMBOS"];
-
-const ProductForm = ({
-  formData,
-  setFormData,
-  onSubmit,
-  submitLabel,
-}: {
-  formData: Omit<Produto, "_id">;
-  setFormData: React.Dispatch<React.SetStateAction<Omit<Produto, "_id">>>;
-  onSubmit: () => void;
-  submitLabel: string;
-}) => (
-  <div className="space-y-4">
-    <div className="space-y-2">
-      <Label>Categoria Principal</Label>
-      <Select
-        value={formData.categoriaPrincipal}
-        onValueChange={(value) =>
-          setFormData({ ...formData, categoriaPrincipal: value })
-        }
-      >
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {CATEGORIAS_PRINCIPAIS.map((cat) => (
-            <SelectItem key={cat} value={cat}>
-              {cat}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-    <div className="space-y-2">
-      <Label>Subcategoria</Label>
-      <Input
-        value={formData.subcategoria}
-        onChange={(e) =>
-          setFormData({ ...formData, subcategoria: e.target.value })
-        }
-        placeholder="Ex: Cervejas, Lanches..."
-      />
-    </div>
-    <div className="space-y-2">
-      <Label>Nome do Produto</Label>
-      <Input
-        value={formData.nome}
-        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-        placeholder="Ex: Brahma (lata)"
-      />
-    </div>
-    <div className="space-y-2">
-      <Label>Preço (R$)</Label>
-      <Input
-        type="number"
-        step="0.01"
-        value={formData.preco}
-        onChange={(e) =>
-          setFormData({ ...formData, preco: parseFloat(e.target.value) })
-        }
-        placeholder="0.00"
-      />
-    </div>
-    <div className="space-y-2">
-      <Label>Descrição (opcional)</Label>
-      <Input
-        value={formData.descricao}
-        onChange={(e) =>
-          setFormData({ ...formData, descricao: e.target.value })
-        }
-        placeholder="Descrição do produto..."
-      />
-    </div>
-    <div className="space-y-2">
-      <Label>Ordem de Exibição</Label>
-      <Input
-        type="number"
-        value={formData.ordem}
-        onChange={(e) =>
-          setFormData({ ...formData, ordem: parseInt(e.target.value) || 0 })
-        }
-      />
-    </div>
-    <div className="flex items-center gap-2">
-      <input
-        type="checkbox"
-        id="ativo"
-        checked={formData.ativo}
-        onChange={(e) => setFormData({ ...formData, ativo: e.target.checked })}
-        className="rounded"
-      />
-      <Label htmlFor="ativo">Produto Ativo</Label>
-    </div>
-    <Button
-      className="w-full bg-[#2d9da1] hover:bg-[#258487]"
-      onClick={onSubmit}
-    >
-      {submitLabel}
-    </Button>
-  </div>
-);
+const CATEGORIAS_PRINCIPAIS = ["BEBIDAS", "PORÇÕES", "COMBOS", "RECADOS"];
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
@@ -334,7 +225,6 @@ export default function AdminPage() {
         </div>
 
         <h2 className="text-[#2d9da1] font-semibold text-lg mb-4 flex items-center gap-2">
-          <Trash2 className="h-4 w-4" />
           {activeCategory}
         </h2>
 
@@ -367,6 +257,7 @@ export default function AdminPage() {
                     </DialogDescription>
                   </DialogHeader>
                   <ProductForm
+                    categoriasPrincipais={CATEGORIAS_PRINCIPAIS}
                     formData={formData}
                     setFormData={setFormData}
                     onSubmit={handleAddProduto}
@@ -468,6 +359,7 @@ export default function AdminPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <ProductForm
+                  categoriasPrincipais={CATEGORIAS_PRINCIPAIS}
                   formData={formData}
                   setFormData={setFormData}
                   onSubmit={handleAddProduto}
@@ -486,6 +378,7 @@ export default function AdminPage() {
             <DialogDescription>Atualize os dados do produto</DialogDescription>
           </DialogHeader>
           <ProductForm
+            categoriasPrincipais={CATEGORIAS_PRINCIPAIS}
             formData={formData}
             setFormData={setFormData}
             onSubmit={handleEditProduto}
