@@ -1,7 +1,9 @@
-# Configurações específicas para a branch v-1
-[context.v-1]
+# Configurações gerais (fallback)
+[build]
   command = "pnpm run build"
   publish = ".next"
 
-[context.v-1.environment]
-  NODE_VERSION = "22" # Garante que use o Node atual
+# Configurações específicas para quando o Netlify buildar a branch v-1
+[context.v-1]
+  command = "pnpm run build"
+  publish = ".next"
