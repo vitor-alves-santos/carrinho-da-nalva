@@ -77,7 +77,16 @@ export default function ProductCard({ produto }: ProductCardProps) {
               size="icon"
               variant="outline"
               className="h-6 w-6 rounded-full"
-              onClick={() => setQuantidade(Math.max(1, quantidade - 1))}
+              onClick={() => {
+                const newQuantidade = Math.max(1, quantidade - 1);
+                posthog.capture("product_quantity_decreased", {
+                  product_id: produto._id,
+                  product_name: produto.nome,
+                  old_quantity: quantidade,
+                  new_quantity: newQuantidade,
+                });
+                setQuantidade(newQuantidade);
+              }}
             >
               <Minus className="h-3 w-3" />
             </Button>
@@ -86,7 +95,16 @@ export default function ProductCard({ produto }: ProductCardProps) {
               size="icon"
               variant="outline"
               className="h-6 w-6 rounded-full"
-              onClick={() => setQuantidade(quantidade + 1)}
+              onClick={() => {
+                const newQuantidade = quantidade + 1;
+                posthog.capture("product_quantity_increased", {
+                  product_id: produto._id,
+                  product_name: produto.nome,
+                  old_quantity: quantidade,
+                  new_quantity: newQuantidade,
+                });
+                setQuantidade(newQuantidade);
+              }}
             >
               <Plus className="h-3 w-3" />
             </Button>
