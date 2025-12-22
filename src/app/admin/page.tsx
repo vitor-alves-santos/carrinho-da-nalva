@@ -28,6 +28,7 @@ import {
 import { ArrowLeft, Plus, Pencil, Trash2, LogOut } from "lucide-react";
 import Link from "next/link";
 import ProductForm from "@/components/ProductForm";
+import posthog from "posthog-js";
 
 const CATEGORIAS_PRINCIPAIS = ["BEBIDAS", "PORÇÕES", "COMBOS", "RECADOS"];
 
@@ -86,12 +87,23 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
+        const newProduct = await response.json();
+        // Track product creation event
+        posthog.capture("admin_product_created", {
+          product_id: newProduct._id,
+          product_name: formData.nome,
+          product_category: formData.categoriaPrincipal,
+          product_subcategory: formData.subcategoria,
+          product_price: formData.preco,
+          product_active: formData.ativo,
+        });
         await fetchProdutos();
         setIsAddDialogOpen(false);
         resetForm();
       }
     } catch (error) {
       console.error("Error adding produto:", error);
+      posthog.captureException(error);
     }
   };
 
@@ -109,6 +121,17 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
+        // Track product update event
+        posthog.capture("admin_product_updated", {
+          product_id: editingProduto._id,
+          product_name: formData.nome,
+          product_category: formData.categoriaPrincipal,
+          product_subcategory: formData.subcategoria,
+          product_price: formData.preco,
+          product_active: formData.ativo,
+          previous_name: editingProduto.nome,
+          previous_price: editingProduto.preco,
+        });
         await fetchProdutos();
         setIsEditDialogOpen(false);
         setEditingProduto(null);
@@ -116,20 +139,31 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error("Error updating produto:", error);
+      posthog.captureException(error);
     }
   };
 
   const handleDeleteProduto = async (id: string) => {
+    const produtoToDelete = produtos.find((p) => p._id === id);
+
     try {
       const response = await fetch(`/api/produtos/${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
+        // Track product deletion event
+        posthog.capture("admin_product_deleted", {
+          product_id: id,
+          product_name: produtoToDelete?.nome,
+          product_category: produtoToDelete?.categoriaPrincipal,
+          product_price: produtoToDelete?.preco,
+        });
         await fetchProdutos();
       }
     } catch (error) {
       console.error("Error deleting produto:", error);
+      posthog.captureException(error);
     }
   };
 
@@ -202,7 +236,11 @@ export default function AdminPage() {
             </Link>
             <h1 className="text-lg font-semibold ml-2">Gerenciar Cardápio</h1>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => signOut()}>
+          <Button variant="ghost" size="icon" onClick={() => {
+            posthog.capture("admin_logged_out");
+            posthog.reset();
+            signOut();
+          }}>
             <LogOut className="h-5 w-5" />
           </Button>
         </div>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import posthog from "posthog-js";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,6 +22,12 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
+    // Track login attempt
+    posthog.capture("admin_login_attempted", {
+      login_method: "credentials",
+      username: username,
+    });
+
     const result = await signIn("credentials", {
       username,
       password,
@@ -28,14 +35,33 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
+      // Track login failure
+      posthog.capture("admin_login_failed", {
+        login_method: "credentials",
+        username: username,
+        error: "invalid_credentials",
+      });
       setError("Usuário ou senha inválidos");
       setLoading(false);
     } else {
+      // Identify user on successful login
+      posthog.identify(username, {
+        username: username,
+        role: "admin",
+      });
+      posthog.capture("admin_login_success", {
+        login_method: "credentials",
+        username: username,
+      });
       router.push("/admin");
     }
   };
 
   const handleGoogleLogin = () => {
+    // Track Google login attempt
+    posthog.capture("admin_login_attempted", {
+      login_method: "google",
+    });
     signIn("google", { callbackUrl: "/admin" });
   };
 

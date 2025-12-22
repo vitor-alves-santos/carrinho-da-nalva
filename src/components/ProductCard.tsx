@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import posthog from "posthog-js";
 
 interface ProductCardProps {
   produto: Produto;
@@ -21,6 +22,18 @@ export default function ProductCard({ produto }: ProductCardProps) {
     for (let i = 0; i < quantidade; i++) {
       addItem(produto);
     }
+
+    // Track product added to cart event
+    posthog.capture("product_added_to_cart", {
+      product_id: produto._id,
+      product_name: produto.nome,
+      product_category: produto.categoriaPrincipal,
+      product_subcategory: produto.subcategoria,
+      product_price: produto.preco,
+      quantity: quantidade,
+      total_value: produto.preco * quantidade,
+    });
+
     setQuantidade(1);
     setShowControls(false);
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import posthog from "posthog-js";
 
 interface CategoryTabsProps {
   categories: string[];
@@ -13,11 +14,20 @@ export default function CategoryTabs({
   activeCategory,
   onCategoryChange,
 }: CategoryTabsProps) {
+  const handleCategoryChange = (category: string) => {
+    // Track category change event
+    posthog.capture("category_changed", {
+      previous_category: activeCategory,
+      new_category: category,
+    });
+    onCategoryChange(category);
+  };
+
   return (
     <div className="sticky top-0 z-20 bg-white shadow-sm">
       <Tabs
         value={activeCategory}
-        onValueChange={onCategoryChange}
+        onValueChange={handleCategoryChange}
         className="w-full"
       >
         <TabsList className="w-full justify-start gap-2 h-auto p-2 bg-white overflow-x-auto flex-nowrap">

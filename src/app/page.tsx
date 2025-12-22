@@ -6,6 +6,7 @@ import CategoryTabs from "@/components/CategoryTabs";
 import ProductList from "@/components/ProductList";
 import FloatingCartButton from "@/components/FloatingCartButton";
 import { Produto } from "@/types/produto";
+import posthog from "posthog-js";
 
 export default function Home() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -44,6 +45,11 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error fetching produtos:", error);
+        // Track menu load error
+        posthog.capture("menu_load_error", {
+          error_message: error instanceof Error ? error.message : "Unknown error",
+        });
+        posthog.captureException(error);
         setError("Não foi possível carregar o cardápio. Tente novamente mais tarde.");
       } finally {
         setLoading(false);
