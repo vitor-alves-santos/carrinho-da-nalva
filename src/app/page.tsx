@@ -29,8 +29,13 @@ export default function Home() {
           ...new Set(data.map((p: Produto) => p.categoriaPrincipal)),
         ] as string[];
 
-        const categoryOrder = ["RECADOS", "COMBOS", "BEBIDAS", "PORÇÕES"];
-        
+        const categoryOrder = [
+          "RECADOS e KIT TIA NALVA",
+          "COMBOS",
+          "BEBIDAS",
+          "PORÇÕES",
+        ];
+
         const sortedCategories = uniqueCategories.sort((a, b) => {
           const indexA = categoryOrder.indexOf(a);
           const indexB = categoryOrder.indexOf(b);
@@ -47,10 +52,13 @@ export default function Home() {
         console.error("Error fetching produtos:", error);
         // Track menu load error
         posthog.capture("menu_load_error", {
-          error_message: error instanceof Error ? error.message : "Unknown error",
+          error_message:
+            error instanceof Error ? error.message : "Unknown error",
         });
         posthog.captureException(error);
-        setError("Não foi possível carregar o cardápio. Tente novamente mais tarde.");
+        setError(
+          "Não foi possível carregar o cardápio. Tente novamente mais tarde."
+        );
       } finally {
         setLoading(false);
       }

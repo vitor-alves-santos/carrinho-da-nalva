@@ -8,7 +8,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import posthog from "posthog-js";
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5511999999999";
+const WHATSAPP_NUMBER =
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5511999999999";
 
 export default function PedidoPage() {
   const items = useCartStore((state) => state.items);
@@ -27,10 +28,14 @@ export default function PedidoPage() {
   const handleWhatsAppOrder = () => {
     const orderLines = items.map(
       (item) =>
-        `• ${item.quantidade}x ${item.nome} - ${formatPrice(item.preco * item.quantidade)}`
+        `• ${item.quantidade}x ${item.nome} - ${formatPrice(
+          item.preco * item.quantidade
+        )}`
     );
 
-    const message = `🏖️ *Pedido - Quiosque Tia Nalva*\n\n${orderLines.join("\n")}\n\n💰 *Total: ${formatPrice(getTotal())}*`;
+    const message = `🏖️ *Pedido - Carrinho da Nalva*\n\n${orderLines.join(
+      "\n"
+    )}\n\n💰 *Total: ${formatPrice(getTotal())}*`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;

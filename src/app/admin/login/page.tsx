@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import posthog from "posthog-js";
 
@@ -73,7 +79,7 @@ export default function LoginPage() {
             <span className="text-2xl">🏖️</span>
           </div>
           <CardTitle className="text-2xl">Área Administrativa</CardTitle>
-          <CardDescription>Quiosque Tia Nalva</CardDescription>
+          <CardDescription>Carrinho da Nalva</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCredentialsLogin} className="space-y-4">
