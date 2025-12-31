@@ -29,7 +29,7 @@ export default function Home() {
           ...new Set(data.map((p: Produto) => p.categoriaPrincipal)),
         ] as string[];
 
-        const categoryOrder = [
+        const categoryOrder: string[] = [
           "RECADOS e KIT TIA NALVA",
           "COMBOS",
           "BEBIDAS",

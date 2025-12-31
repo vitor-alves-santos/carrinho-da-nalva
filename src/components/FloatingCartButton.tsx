@@ -12,7 +12,8 @@ export default function FloatingCartButton() {
   const totalItems = useCartStore((state) => state.getTotalItems());
   const total = useCartStore((state) => state.getTotal());
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined) => {
+    if (price === undefined || price === null) return "";
     return price.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",

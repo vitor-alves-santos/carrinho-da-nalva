@@ -18,7 +18,8 @@ export default function PedidoPage() {
   const clearCart = useCartStore((state) => state.clearCart);
   const getTotal = useCartStore((state) => state.getTotal);
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined) => {
+    if (price === undefined || price === null) return "";
     return price.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
