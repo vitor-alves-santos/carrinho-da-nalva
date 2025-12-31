@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cardápio Tia Nalva - Quiosque & Bar",
-  description: "Cardápio digital do Quiosque Tia Nalva. Faça seu pedido online!",
+  title: "Carrinho da Nalva",
+  description: "Cardápio digital do Carrinho da Nalva. Faça seu pedido online!",
 };
 
 export default function RootLayout({
