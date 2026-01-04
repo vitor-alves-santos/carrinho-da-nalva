@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Pedido, OrderStatus } from "@/types/pedido";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,33 +8,45 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle2, XCircle, Clock, UtensilsCrossed, RefreshCw } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Clock,
+  UtensilsCrossed,
+  RefreshCw,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function FilaPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const prevDataStr = useRef<string>("");
 
-  const fetchPedidos = async () => {
+  const fetchPedidos = async (silent = true) => {
     try {
-      setRefreshing(true);
+      if (!silent) setRefreshing(true);
       const response = await fetch("/api/pedidos");
       if (response.ok) {
-        const data = await response.json();
-        setPedidos(data);
+        const data: Pedido[] = await response.json();
+        const newDataStr = JSON.stringify(data);
+
+        if (prevDataStr.current !== newDataStr) {
+          setPedidos(data);
+          prevDataStr.current = newDataStr;
+        }
       }
     } catch (error) {
       console.error("Erro ao buscar pedidos:", error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      if (!silent) setRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchPedidos();
-    const interval = setInterval(fetchPedidos, 5000); // Polling a cada 5 segundos
+    const interval = setInterval(() => fetchPedidos(true), 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -63,11 +75,32 @@ export default function FilaPedidosPage() {
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case "Pendente":
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">Pendente</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-yellow-50 text-yellow-700 border-yellow-200"
+          >
+            Pendente
+          </Badge>
+        );
       case "Entregue":
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Entregue</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 border-green-200"
+          >
+            Entregue
+          </Badge>
+        );
       case "Cancelado":
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Cancelado</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="bg-red-50 text-red-700 border-red-200"
+          >
+            Cancelado
+          </Badge>
+        );
     }
   };
 
@@ -79,7 +112,13 @@ export default function FilaPedidosPage() {
       exit={{ opacity: 0, scale: 0.95 }}
       className="mb-4"
     >
-      <Card className={pedido.status === "Pendente" ? "border-l-4 border-l-yellow-400 shadow-md" : "opacity-80"}>
+      <Card
+        className={
+          pedido.status === "Pendente"
+            ? "border-l-4 border-l-yellow-400 shadow-md"
+            : "opacity-80"
+        }
+      >
         <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
           <div>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -88,36 +127,45 @@ export default function FilaPedidosPage() {
             </CardTitle>
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              {new Date(pedido.createdAt).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}
+              {new Date(pedido.createdAt).toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
           </div>
           <div className="text-right">
-            <p className="font-bold text-[#2d9da1]">{formatPrice(pedido.total)}</p>
+            <p className="font-bold text-[#2d9da1]">
+              {formatPrice(pedido.total)}
+            </p>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {pedido.itens.map((item, idx) => (
               <div key={idx} className="flex justify-between text-sm">
-                <span>{item.quantidade}x {item.nome}</span>
-                <span className="text-gray-500">{formatPrice(item.preco * item.quantidade)}</span>
+                <span>
+                  {item.quantidade}x {item.nome}
+                </span>
+                <span className="text-gray-500">
+                  {formatPrice(item.preco * item.quantidade)}
+                </span>
               </div>
             ))}
           </div>
-          
+
           {pedido.status === "Pendente" && (
             <>
               <Separator className="my-4" />
               <div className="flex gap-2">
-                <Button 
+                <Button
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                   onClick={() => updateStatus(pedido._id!, "Entregue")}
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                   Entregue
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
                   onClick={() => updateStatus(pedido._id!, "Cancelado")}
                 >
@@ -143,14 +191,16 @@ export default function FilaPedidosPage() {
             </h1>
             <p className="text-gray-500">Gerencie os pedidos em tempo real</p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={fetchPedidos}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchPedidos(false)}
             disabled={refreshing}
             className="w-fit"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+            />
             Atualizar
           </Button>
         </header>
@@ -165,9 +215,9 @@ export default function FilaPedidosPage() {
             <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="pendentes" className="relative">
                 Pendentes
-                {pedidos.filter(p => p.status === "Pendente").length > 0 && (
+                {pedidos.filter((p) => p.status === "Pendente").length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                    {pedidos.filter(p => p.status === "Pendente").length}
+                    {pedidos.filter((p) => p.status === "Pendente").length}
                   </span>
                 )}
               </TabsTrigger>
@@ -178,13 +228,17 @@ export default function FilaPedidosPage() {
             <TabsContent value="pendentes">
               <ScrollArea className="h-[calc(100vh-300px)] pr-4">
                 <AnimatePresence mode="popLayout">
-                  {pedidos.filter(p => p.status === "Pendente").length > 0 ? (
-                    pedidos.filter(p => p.status === "Pendente").map(pedido => (
-                      <OrderCard key={pedido._id} pedido={pedido} />
-                    ))
+                  {pedidos.filter((p) => p.status === "Pendente").length > 0 ? (
+                    pedidos
+                      .filter((p) => p.status === "Pendente")
+                      .map((pedido) => (
+                        <OrderCard key={pedido._id} pedido={pedido} />
+                      ))
                   ) : (
                     <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed">
-                      <p className="text-gray-400">Nenhum pedido pendente no momento.</p>
+                      <p className="text-gray-400">
+                        Nenhum pedido pendente no momento.
+                      </p>
                     </div>
                   )}
                 </AnimatePresence>
@@ -193,17 +247,21 @@ export default function FilaPedidosPage() {
 
             <TabsContent value="entregues">
               <ScrollArea className="h-[calc(100vh-300px)] pr-4">
-                {pedidos.filter(p => p.status === "Entregue").map(pedido => (
-                  <OrderCard key={pedido._id} pedido={pedido} />
-                ))}
+                {pedidos
+                  .filter((p) => p.status === "Entregue")
+                  .map((pedido) => (
+                    <OrderCard key={pedido._id} pedido={pedido} />
+                  ))}
               </ScrollArea>
             </TabsContent>
 
             <TabsContent value="cancelados">
               <ScrollArea className="h-[calc(100vh-300px)] pr-4">
-                {pedidos.filter(p => p.status === "Cancelado").map(pedido => (
-                  <OrderCard key={pedido._id} pedido={pedido} />
-                ))}
+                {pedidos
+                  .filter((p) => p.status === "Cancelado")
+                  .map((pedido) => (
+                    <OrderCard key={pedido._id} pedido={pedido} />
+                  ))}
               </ScrollArea>
             </TabsContent>
           </Tabs>
