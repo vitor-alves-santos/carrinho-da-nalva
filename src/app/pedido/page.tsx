@@ -3,13 +3,14 @@
 import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Minus, Plus, Trash2, MessageCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Minus, Plus, Trash2, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import posthog from "posthog-js";
-
-const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5511999999999";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PedidoPage() {
   const items = useCartStore((state) => state.items);
@@ -17,6 +18,11 @@ export default function PedidoPage() {
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
   const getTotal = useCartStore((state) => state.getTotal);
+  
+  const [mesa, setMesa] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const router = useRouter();
 
   const formatPrice = (price: number | undefined) => {
     if (price === undefined || price === null) return "";
@@ -26,43 +32,58 @@ export default function PedidoPage() {
     });
   };
 
-  const handleWhatsAppOrder = () => {
-    const orderLines = items.map(
-      (item) =>
-        `• ${item.quantidade}x ${item.nome} - ${formatPrice(
-          item.preco * item.quantidade
-        )}`
-    );
+  const handleSubmitOrder = async () => {
+    if (!mesa) {
+      alert("Por favor, insira o número da mesa.");
+      return;
+    }
 
-    const message = `🏖️ *Pedido - Carrinho da Nalva*\n\n${orderLines.join(
-      "\n"
-    )}\n\n💰 *Total: ${formatPrice(getTotal())}*`;
+    setIsSubmitting(true);
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    try {
+      const response = await fetch("/api/pedidos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mesa,
+          itens: items,
+          total: getTotal(),
+        }),
+      });
 
-    // Track order submission - key conversion event
-    posthog.capture("order_submitted_whatsapp", {
-      total_items: items.reduce((acc, item) => acc + item.quantidade, 0),
-      total_value: getTotal(),
-      item_count: items.length,
-      items: items.map((item) => ({
-        product_id: item._id,
-        product_name: item.nome,
-        quantity: item.quantidade,
-        price: item.preco,
-        category: item.categoriaPrincipal,
-      })),
-    });
+      if (!response.ok) {
+        throw new Error("Erro ao enviar pedido");
+      }
 
-    window.open(whatsappUrl, "_blank");
-    clearCart();
+      // Track order submission
+      posthog.capture("order_submitted_v2", {
+        mesa,
+        total_items: items.reduce((acc, item) => acc + item.quantidade, 0),
+        total_value: getTotal(),
+        item_count: items.length,
+      });
+
+      setIsSuccess(true);
+      clearCart();
+      
+      // Redirect after 3 seconds
+      setTimeout(() => {
+        router.push("/");
+      }, 3000);
+
+    } catch (error) {
+      console.error("Erro:", error);
+      alert("Ocorreu um erro ao enviar seu pedido. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     const item = items.find((i) => i._id === itemId);
     if (item) {
-      // Track quantity update event
       posthog.capture("cart_item_quantity_updated", {
         product_id: item._id,
         product_name: item.nome,
@@ -77,7 +98,6 @@ export default function PedidoPage() {
   const handleRemoveItem = (itemId: string) => {
     const item = items.find((i) => i._id === itemId);
     if (item) {
-      // Track item removal event
       posthog.capture("cart_item_removed", {
         product_id: item._id,
         product_name: item.nome,
@@ -88,6 +108,30 @@ export default function PedidoPage() {
     }
     removeItem(itemId);
   };
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <CheckCircle2 className="h-20 w-20 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Pedido Enviado!</h1>
+          <p className="text-gray-600 mb-6">
+            Seu pedido para a mesa <strong>{mesa}</strong> foi registrado com sucesso.
+            Aguarde enquanto preparamos tudo para você.
+          </p>
+          <Link href="/">
+            <Button className="bg-[#2d9da1] hover:bg-[#258487]">
+              Voltar ao Cardápio
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -123,7 +167,7 @@ export default function PedidoPage() {
         </div>
       </header>
 
-      <div className="p-4 pb-32">
+      <div className="p-4 pb-40">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {items.map((item, index) => (
             <motion.div
@@ -194,15 +238,38 @@ export default function PedidoPage() {
             <span className="text-[#2d9da1]">{formatPrice(getTotal())}</span>
           </div>
         </div>
+
+        <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
+          <div className="space-y-2">
+            <Label htmlFor="mesa" className="text-base font-semibold">Número da Mesa</Label>
+            <Input 
+              id="mesa"
+              type="number"
+              placeholder="Ex: 12"
+              value={mesa}
+              onChange={(e) => setMesa(e.target.value)}
+              className="text-lg py-6"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg">
         <Button
-          className="w-full bg-green-500 hover:bg-green-600 text-white py-6 rounded-xl text-lg font-semibold flex items-center justify-center gap-2"
-          onClick={handleWhatsAppOrder}
+          className="w-full bg-[#2d9da1] hover:bg-[#258487] text-white py-6 rounded-xl text-lg font-semibold flex items-center justify-center gap-2"
+          onClick={handleSubmitOrder}
+          disabled={isSubmitting || !mesa}
         >
-          <MessageCircle className="h-5 w-5" />
-          Pedir no WhatsApp
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Enviando...
+            </>
+          ) : (
+            <>
+              Confirmar Pedido
+            </>
+          )}
         </Button>
       </div>
     </div>
