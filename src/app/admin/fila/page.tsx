@@ -8,12 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import {
   CheckCircle2,
   XCircle,
   Clock,
   UtensilsCrossed,
   RefreshCw,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,6 +23,7 @@ export default function FilaPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filterMesa, setFilterMesa] = useState("");
   const prevDataStr = useRef<string>("");
 
   const fetchPedidos = async (silent = true) => {
@@ -71,6 +74,10 @@ export default function FilaPedidosPage() {
       currency: "BRL",
     });
   };
+
+  const filteredPedidos = pedidos.filter((pedido) =>
+    pedido.mesa.toLowerCase().includes(filterMesa.toLowerCase())
+  );
 
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
@@ -191,18 +198,29 @@ export default function FilaPedidosPage() {
             </h1>
             <p className="text-gray-500">Gerencie os pedidos em tempo real</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchPedidos(false)}
-            disabled={refreshing}
-            className="w-fit"
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-            />
-            Atualizar
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Filtrar por mesa..."
+                className="pl-9"
+                value={filterMesa}
+                onChange={(e) => setFilterMesa(e.target.value)}
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchPedidos(false)}
+              disabled={refreshing}
+              className="w-full sm:w-fit"
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              />
+              Atualizar
+            </Button>
+          </div>
         </header>
 
         {loading ? (
@@ -215,9 +233,9 @@ export default function FilaPedidosPage() {
             <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="pendentes" className="relative">
                 Pendentes
-                {pedidos.filter((p) => p.status === "Pendente").length > 0 && (
+                {filteredPedidos.filter((p) => p.status === "Pendente").length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                    {pedidos.filter((p) => p.status === "Pendente").length}
+                    {filteredPedidos.filter((p) => p.status === "Pendente").length}
                   </span>
                 )}
               </TabsTrigger>
@@ -228,8 +246,8 @@ export default function FilaPedidosPage() {
             <TabsContent value="pendentes">
               <ScrollArea className="h-[calc(100vh-300px)] pr-4">
                 <AnimatePresence mode="popLayout">
-                  {pedidos.filter((p) => p.status === "Pendente").length > 0 ? (
-                    pedidos
+                  {filteredPedidos.filter((p) => p.status === "Pendente").length > 0 ? (
+                    filteredPedidos
                       .filter((p) => p.status === "Pendente")
                       .map((pedido) => (
                         <OrderCard key={pedido._id} pedido={pedido} />
@@ -237,7 +255,9 @@ export default function FilaPedidosPage() {
                   ) : (
                     <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed">
                       <p className="text-gray-400">
-                        Nenhum pedido pendente no momento.
+                        {filterMesa
+                          ? `Nenhum pedido pendente para a mesa ${filterMesa}.`
+                          : "Nenhum pedido pendente no momento."}
                       </p>
                     </div>
                   )}
@@ -247,7 +267,7 @@ export default function FilaPedidosPage() {
 
             <TabsContent value="entregues">
               <ScrollArea className="h-[calc(100vh-300px)] pr-4">
-                {pedidos
+                {filteredPedidos
                   .filter((p) => p.status === "Entregue")
                   .map((pedido) => (
                     <OrderCard key={pedido._id} pedido={pedido} />
@@ -257,7 +277,7 @@ export default function FilaPedidosPage() {
 
             <TabsContent value="cancelados">
               <ScrollArea className="h-[calc(100vh-300px)] pr-4">
-                {pedidos
+                {filteredPedidos
                   .filter((p) => p.status === "Cancelado")
                   .map((pedido) => (
                     <OrderCard key={pedido._id} pedido={pedido} />
