@@ -16,8 +16,10 @@ import {
   UtensilsCrossed,
   RefreshCw,
   Search,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 export default function FilaPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -76,7 +78,7 @@ export default function FilaPedidosPage() {
   };
 
   const filteredPedidos = pedidos.filter((pedido) =>
-    pedido.mesa.toLowerCase().includes(filterMesa.toLowerCase())
+    pedido.mesa.toLowerCase().includes(filterMesa.toLowerCase()),
   );
 
   const getStatusBadge = (status: OrderStatus) => {
@@ -190,6 +192,18 @@ export default function FilaPedidosPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
+        <div className="mb-4">
+          <Link href="/admin">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-500 hover:text-[#2d9da1] p-0"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar ao Painel do Cardápio
+            </Button>
+          </Link>
+        </div>
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -233,9 +247,13 @@ export default function FilaPedidosPage() {
             <TabsList className="grid w-full grid-cols-3 mb-8">
               <TabsTrigger value="pendentes" className="relative">
                 Pendentes
-                {filteredPedidos.filter((p) => p.status === "Pendente").length > 0 && (
+                {filteredPedidos.filter((p) => p.status === "Pendente").length >
+                  0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                    {filteredPedidos.filter((p) => p.status === "Pendente").length}
+                    {
+                      filteredPedidos.filter((p) => p.status === "Pendente")
+                        .length
+                    }
                   </span>
                 )}
               </TabsTrigger>
@@ -246,7 +264,8 @@ export default function FilaPedidosPage() {
             <TabsContent value="pendentes">
               <ScrollArea className="h-[calc(100vh-300px)] pr-4">
                 <AnimatePresence mode="popLayout">
-                  {filteredPedidos.filter((p) => p.status === "Pendente").length > 0 ? (
+                  {filteredPedidos.filter((p) => p.status === "Pendente")
+                    .length > 0 ? (
                     filteredPedidos
                       .filter((p) => p.status === "Pendente")
                       .map((pedido) => (

@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Minus, Plus, Trash2, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Minus,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import posthog from "posthog-js";
@@ -18,7 +25,7 @@ export default function PedidoPage() {
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
   const getTotal = useCartStore((state) => state.getTotal);
-  
+
   const [mesa, setMesa] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -67,12 +74,11 @@ export default function PedidoPage() {
 
       setIsSuccess(true);
       clearCart();
-      
+
       // Redirect after 3 seconds
       setTimeout(() => {
         router.push("/");
       }, 3000);
-
     } catch (error) {
       console.error("Erro:", error);
       alert("Ocorreu um erro ao enviar seu pedido. Tente novamente.");
@@ -112,16 +118,18 @@ export default function PedidoPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
         >
           <CheckCircle2 className="h-20 w-20 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Pedido Enviado!</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Pedido Enviado!
+          </h1>
           <p className="text-gray-600 mb-6">
-            Seu pedido para a mesa <strong>{mesa}</strong> foi registrado com sucesso.
-            Aguarde enquanto preparamos tudo para você.
+            Seu pedido para a mesa <strong>{mesa}</strong> foi registrado com
+            sucesso. Aguarde enquanto preparamos tudo para você.
           </p>
           <Link href="/">
             <Button className="bg-[#2d9da1] hover:bg-[#258487]">
@@ -241,8 +249,10 @@ export default function PedidoPage() {
 
         <div className="bg-white rounded-xl shadow-sm mt-4 p-4">
           <div className="space-y-2">
-            <Label htmlFor="mesa" className="text-base font-semibold">Número da Mesa</Label>
-            <Input 
+            <Label htmlFor="mesa" className="text-base font-semibold">
+              Número da Mesa
+            </Label>
+            <Input
               id="mesa"
               type="number"
               placeholder="Ex: 12"
@@ -266,9 +276,7 @@ export default function PedidoPage() {
               Enviando...
             </>
           ) : (
-            <>
-              Confirmar Pedido
-            </>
+            <>Fazer Pedido</>
           )}
         </Button>
       </div>
