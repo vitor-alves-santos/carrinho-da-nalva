@@ -12,12 +12,14 @@ import {
   Trash2,
   CheckCircle2,
   Loader2,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import posthog from "posthog-js";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { CartItem } from "@/types/produto";
 
 export default function PedidoPage() {
   const items = useCartStore((state) => state.items);
@@ -29,6 +31,10 @@ export default function PedidoPage() {
   const [mesa, setMesa] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [lastOrder, setLastOrder] = useState<{
+    itens: CartItem[];
+    total: number;
+  } | null>(null);
   const router = useRouter();
 
   const formatPrice = (price: number | undefined) => {
@@ -38,6 +44,23 @@ export default function PedidoPage() {
       currency: "BRL",
     });
   };
+
+  const whatsappUrl = useMemo(() => {
+    if (!lastOrder) return "";
+
+    const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "12988699703";
+    const text =
+      `*Novo Pedido - Mesa ${mesa}*%0A%0A` +
+      lastOrder.itens
+        .map(
+          (item) =>
+            `- ${item.quantidade}x ${item.nome} (${formatPrice(item.preco * item.quantidade)})`,
+        )
+        .join("%0A") +
+      `%0A%0A*Total: ${formatPrice(lastOrder.total)}*`;
+
+    return `https://wa.me/${number}?text=${text}`;
+  }, [lastOrder, mesa]);
 
   const handleSubmitOrder = async () => {
     if (!mesa) {
@@ -64,7 +87,6 @@ export default function PedidoPage() {
         throw new Error("Erro ao enviar pedido");
       }
 
-      // Track order submission
       posthog.capture("order_submitted_v2", {
         mesa,
         total_items: items.reduce((acc, item) => acc + item.quantidade, 0),
@@ -72,13 +94,15 @@ export default function PedidoPage() {
         item_count: items.length,
       });
 
+      // Save order before clearing cart for WhatsApp message
+      setLastOrder({ itens: items, total: getTotal() });
+
       setIsSuccess(true);
       clearCart();
 
-      // Redirect after 3 seconds
       setTimeout(() => {
         router.push("/");
-      }, 3000);
+      }, 5000);
     } catch (error) {
       console.error("Erro:", error);
       alert("Ocorreu um erro ao enviar seu pedido. Tente novamente.");
@@ -131,6 +155,17 @@ export default function PedidoPage() {
             Seu pedido para a mesa <strong>{mesa}</strong> foi registrado com
             sucesso. Aguarde enquanto preparamos tudo para você.
           </p>
+          {lastOrder && whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-xl font-semibold mb-3"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Enviar pedido no WhatsApp
+            </a>
+          )}
           <Link href="/">
             <Button className="bg-[#2d9da1] hover:bg-[#258487]">
               Voltar ao Cardápio

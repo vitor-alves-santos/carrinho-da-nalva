@@ -17,6 +17,7 @@ import {
   RefreshCw,
   Search,
   ArrowLeft,
+  MessageCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -75,6 +76,21 @@ export default function FilaPedidosPage() {
       style: "currency",
       currency: "BRL",
     });
+  };
+
+  const generateWhatsAppUrl = (pedido: Pedido) => {
+    const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "12988699703";
+    const text =
+      `*Pedido - Mesa ${pedido.mesa}*%0A%0A` +
+      pedido.itens
+        .map(
+          (item) =>
+            `- ${item.quantidade}x ${item.nome} (${formatPrice(item.preco * item.quantidade)})`,
+        )
+        .join("%0A") +
+      `%0A%0A*Total: ${formatPrice(pedido.total)}*`;
+
+    return `https://wa.me/${number}?text=${text}`;
   };
 
   const filteredPedidos = pedidos.filter((pedido) =>
@@ -165,22 +181,33 @@ export default function FilaPedidosPage() {
           {pedido.status === "Pendente" && (
             <>
               <Separator className="my-4" />
-              <div className="flex gap-2">
-                <Button
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => updateStatus(pedido._id!, "Entregue")}
+              <div className="space-y-2">
+                <a
+                  href={generateWhatsAppUrl(pedido)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium text-sm"
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Entregue
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                  onClick={() => updateStatus(pedido._id!, "Cancelado")}
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
+                  <MessageCircle className="h-4 w-4" />
+                  Enviar no WhatsApp
+                </a>
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => updateStatus(pedido._id!, "Entregue")}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Entregue
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={() => updateStatus(pedido._id!, "Cancelado")}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Cancelar
+                  </Button>
+                </div>
               </div>
             </>
           )}
