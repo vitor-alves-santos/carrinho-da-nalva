@@ -329,7 +329,7 @@ export default function AdminPage() {
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
-                  <DialogHeader>
+                  <DialogHeader className="gap-0">
                     <DialogTitle>Adicionar Produto</DialogTitle>
                     <DialogDescription>
                       Preencha os dados do novo produto
@@ -431,7 +431,7 @@ export default function AdminPage() {
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader>
+                <DialogHeader className="gap-0">
                   <DialogTitle>Adicionar Produto</DialogTitle>
                   <DialogDescription>
                     Preencha os dados do novo produto
@@ -452,7 +452,7 @@ export default function AdminPage() {
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
-          <DialogHeader>
+          <DialogHeader className="gap-0">
             <DialogTitle>Editar Produto</DialogTitle>
             <DialogDescription>Atualize os dados do produto</DialogDescription>
           </DialogHeader>
