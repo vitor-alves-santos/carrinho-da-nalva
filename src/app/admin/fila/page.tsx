@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Pedido, OrderStatus } from "@/types/pedido";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,14 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { toast } from "sonner";
+
+const formatPrice = (price: number) => {
+  return price.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+};
 
 export default function FilaPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -28,8 +36,26 @@ export default function FilaPedidosPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [filterMesa, setFilterMesa] = useState("");
   const prevDataStr = useRef<string>("");
+  // 🎵 SOM
+  const playNotificationSound = () => {
+    new Audio(
+      "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
+    )
+      .play()
+      .catch(console.error);
+  };
 
-  const fetchPedidos = async (silent = true) => {
+  // 🔔 BROWSER NOTIF
+  const showBrowserNotification = (mesa: string) => {
+    if (!("Notification" in window) || Notification.permission !== "granted")
+      return;
+    new Notification("Novo pedido recebido!", {
+      body: `Mesa ${mesa} fez pedido.`,
+      icon: "/favicon.ico",
+    });
+  };
+
+  const fetchPedidos = useCallback(async (silent = true) => {
     try {
       if (!silent) setRefreshing(true);
       const response = await fetch("/api/pedidos");
@@ -38,6 +64,24 @@ export default function FilaPedidosPage() {
         const newDataStr = JSON.stringify(data);
 
         if (prevDataStr.current !== newDataStr) {
+          // Detecta novos pedidos comparando os IDs
+          const prevPedidos = JSON.parse(
+            prevDataStr.current || "[]",
+          ) as Pedido[];
+          const newPedidos = data.filter(
+            (np) => !prevPedidos.some((op) => op._id === np._id),
+          );
+
+          if (newPedidos.length > 0 && prevDataStr.current !== "") {
+            const newest = newPedidos[0];
+            toast.success("Novo pedido!", {
+              description: `Mesa ${newest.mesa} fez pedido de ${formatPrice(newest.total)}`,
+              duration: 10000,
+            });
+            playNotificationSound();
+            showBrowserNotification(newest.mesa);
+          }
+
           setPedidos(data);
           prevDataStr.current = newDataStr;
         }
@@ -48,13 +92,19 @@ export default function FilaPedidosPage() {
       setLoading(false);
       if (!silent) setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchPedidos();
-    const interval = setInterval(() => fetchPedidos(true), 5000);
+    const interval = setInterval(() => fetchPedidos(true), 10000);
+
+    // Request permission for notifications
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchPedidos]);
 
   const updateStatus = async (id: string, newStatus: OrderStatus) => {
     try {
@@ -69,13 +119,6 @@ export default function FilaPedidosPage() {
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
     }
-  };
-
-  const formatPrice = (price: number) => {
-    return price.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
   };
 
   const generateWhatsAppUrl = (pedido: Pedido) => {
@@ -219,7 +262,7 @@ export default function FilaPedidosPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-4">
+        <div>
           <Link href="/admin">
             <Button
               variant="ghost"
@@ -231,7 +274,7 @@ export default function FilaPedidosPage() {
             </Button>
           </Link>
         </div>
-        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <header className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
               <UtensilsCrossed className="h-8 w-8 text-[#2d9da1]" />
@@ -271,7 +314,7 @@ export default function FilaPedidosPage() {
           </div>
         ) : (
           <Tabs defaultValue="pendentes" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="pendentes" className="relative">
                 Pendentes
                 {filteredPedidos.filter((p) => p.status === "Pendente").length >
@@ -289,7 +332,7 @@ export default function FilaPedidosPage() {
             </TabsList>
 
             <TabsContent value="pendentes">
-              <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+              <ScrollArea className="pr-4">
                 <AnimatePresence mode="popLayout">
                   {filteredPedidos.filter((p) => p.status === "Pendente")
                     .length > 0 ? (
@@ -312,7 +355,7 @@ export default function FilaPedidosPage() {
             </TabsContent>
 
             <TabsContent value="entregues">
-              <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+              <ScrollArea className="pr-4">
                 {filteredPedidos
                   .filter((p) => p.status === "Entregue")
                   .map((pedido) => (
@@ -322,7 +365,7 @@ export default function FilaPedidosPage() {
             </TabsContent>
 
             <TabsContent value="cancelados">
-              <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+              <ScrollArea className="pr-4">
                 {filteredPedidos
                   .filter((p) => p.status === "Cancelado")
                   .map((pedido) => (

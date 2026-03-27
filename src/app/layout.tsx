@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Cardápio digital do Carrinho da Nalva. Faça seu pedido online!",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,6 +31,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

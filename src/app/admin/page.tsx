@@ -26,12 +26,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  ArrowLeft,
   Plus,
   Pencil,
   Trash2,
   LogOut,
   LayoutList,
+  Utensils,
 } from "lucide-react";
 import Link from "next/link";
 import ProductForm from "@/components/ProductForm";
@@ -235,16 +235,9 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center">
-            <Link href="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <h1 className="text-lg font-semibold ml-2">Gerenciar Cardápio</h1>
-          </div>
-          <div className="flex items-center">
+        <div className="flex items-center justify-between py-4 px-1 md:px-4">
+          <h1 className="text-lg font-semibold ml-1.5">Gerenciar Cardápio</h1>
+          <div className="flex items-center gap-0.5">
             <Link href="/admin/fila">
               <Button
                 variant="outline"
@@ -260,6 +253,23 @@ export default function AdminPage() {
                 className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
               >
                 <LayoutList className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
+              >
+                <Utensils className="h-4 w-4" />
+                Cardápio
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
+              >
+                <Utensils className="h-4 w-4" />
               </Button>
             </Link>
             <Button
