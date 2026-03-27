@@ -59,7 +59,7 @@ export default function LoginPage() {
         login_method: "credentials",
         username: username,
       });
-      router.push("/admin");
+      router.push("/admin/fila");
     }
   };
 
@@ -68,7 +68,7 @@ export default function LoginPage() {
     posthog.capture("admin_login_attempted", {
       login_method: "google",
     });
-    signIn("google", { callbackUrl: "/admin" });
+    signIn("google", { callbackUrl: "/admin/fila" });
   };
 
   return (

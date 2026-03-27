@@ -17,17 +17,21 @@ export const metadata: Metadata = {
   description: "Cardápio digital do Carrinho da Nalva. Faça seu pedido online!",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

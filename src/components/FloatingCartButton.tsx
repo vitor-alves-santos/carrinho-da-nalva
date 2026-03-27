@@ -48,7 +48,7 @@ export default function FloatingCartButton() {
                   {totalItems}
                 </span>
               </div>
-              <span className="font-medium">Pedir no Zap</span>
+              <span className="font-medium">Ver Pedido</span>
             </div>
             <span className="font-bold">{formatPrice(total)}</span>
           </Button>
