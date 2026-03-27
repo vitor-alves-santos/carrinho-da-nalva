@@ -5,3 +5,9 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[[redirects]]
+  from = "https://carrinhodanalva.netlify.app/*"
+  to = "https://carrinhodanalva.com/:splat"
+  status = 301
+  force = true
