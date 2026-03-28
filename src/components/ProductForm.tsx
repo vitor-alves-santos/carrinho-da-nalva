@@ -23,8 +23,8 @@ const ProductForm = ({
   submitLabel: string;
   categoriasPrincipais: string[];
 }) => (
-  <div className="space-y-4">
-    <div className="space-y-2">
+  <div className="space-y-2">
+    <div className="space-y-1">
       <Label>Categoria Principal</Label>
       <Select
         value={formData.categoriaPrincipal}
@@ -44,7 +44,7 @@ const ProductForm = ({
         </SelectContent>
       </Select>
     </div>
-    <div className="space-y-2">
+    <div className="space-y-1">
       <Label>Subcategoria</Label>
       <Input
         value={formData.subcategoria}
@@ -54,7 +54,7 @@ const ProductForm = ({
         placeholder="Ex: Cervejas, Lanches..."
       />
     </div>
-    <div className="space-y-2">
+    <div className="space-y-1">
       <Label>Nome do Produto</Label>
       <Input
         value={formData.nome}
@@ -62,7 +62,7 @@ const ProductForm = ({
         placeholder="Ex: Brahma (lata)"
       />
     </div>
-    <div className="space-y-2">
+    <div className="space-y-1">
       <Label>Preço (R$)</Label>
       <Input
         type="number"
@@ -74,7 +74,7 @@ const ProductForm = ({
         placeholder="0.00"
       />
     </div>
-    <div className="space-y-2">
+    <div className="space-y-1">
       <Label>Descrição (opcional)</Label>
       <Input
         value={formData.descricao}
@@ -84,7 +84,7 @@ const ProductForm = ({
         placeholder="Descrição do produto..."
       />
     </div>
-    <div className="space-y-2">
+    <div className="space-y-1">
       <Label>Ordem de Exibição</Label>
       <Input
         type="number"
