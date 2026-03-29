@@ -32,9 +32,12 @@ const formatPrice = (price: number) => {
 
 export default function FilaPedidosPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [pedidosHistorico, setPedidosHistorico] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [filterMesa, setFilterMesa] = useState("");
+  const [activeTab, setActiveTab] = useState("pendentes");
   const prevDataStr = useRef<string>("");
   // 🎵 SOM
   const playNotificationSound = () => {
@@ -94,6 +97,21 @@ export default function FilaPedidosPage() {
     }
   }, []);
 
+  const fetchHistorico = useCallback(async () => {
+    try {
+      setLoadingHistory(true);
+      const response = await fetch("/api/pedidos?history=true");
+      if (response.ok) {
+        const data = await response.json();
+        setPedidosHistorico(data);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar histórico:", error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchPedidos();
     const interval = setInterval(() => fetchPedidos(true), 10000);
@@ -137,6 +155,10 @@ export default function FilaPedidosPage() {
   };
 
   const filteredPedidos = pedidos.filter((pedido) =>
+    pedido.mesa.toLowerCase().includes(filterMesa.toLowerCase()),
+  );
+
+  const filteredHistorico = pedidosHistorico.filter((pedido) =>
     pedido.mesa.toLowerCase().includes(filterMesa.toLowerCase()),
   );
 
@@ -313,8 +335,8 @@ export default function FilaPedidosPage() {
             <p className="text-gray-500">Carregando pedidos...</p>
           </div>
         ) : (
-          <Tabs defaultValue="pendentes" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="pendentes" className="relative">
                 Pendentes
                 {filteredPedidos.filter((p) => p.status === "Pendente").length >
@@ -329,6 +351,12 @@ export default function FilaPedidosPage() {
               </TabsTrigger>
               <TabsTrigger value="entregues">Entregues</TabsTrigger>
               <TabsTrigger value="cancelados">Cancelados</TabsTrigger>
+              <TabsTrigger 
+                value="historico" 
+                onClick={() => fetchHistorico()}
+              >
+                Histórico
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="pendentes">
@@ -371,6 +399,61 @@ export default function FilaPedidosPage() {
                   .map((pedido) => (
                     <OrderCard key={pedido._id} pedido={pedido} />
                   ))}
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="historico">
+              <ScrollArea className="pr-4">
+                {loadingHistory ? (
+                  <div className="flex flex-col items-center justify-center py-10">
+                    <RefreshCw className="h-6 w-6 animate-spin text-[#2d9da1] mb-2" />
+                    <p className="text-sm text-gray-500">
+                      Buscando histórico...
+                    </p>
+                  </div>
+                ) : filteredHistorico.length > 0 ? (
+                  (() => {
+                    const grouped = filteredHistorico.reduce(
+                      (acc, pedido) => {
+                        const date = new Date(pedido.createdAt);
+                        const month = date.toLocaleString("pt-BR", {
+                          month: "long",
+                        });
+                        const year = date.getFullYear();
+                        const key = `${month} de ${year}`;
+
+                        if (!acc[key]) {
+                          acc[key] = [];
+                        }
+                        acc[key].push(pedido);
+                        return acc;
+                      },
+                      {} as Record<string, Pedido[]>,
+                    );
+
+                    return Object.entries(grouped).map(([monthYear, items]) => (
+                      <div key={monthYear} className="mb-8">
+                        <div className="flex items-center gap-4 mb-4">
+                          <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider shrink-0">
+                            {monthYear}
+                          </h3>
+                          <div className="h-px bg-gray-200 w-full" />
+                        </div>
+                        <div className="space-y-4">
+                          {items.map((pedido) => (
+                            <OrderCard key={pedido._id} pedido={pedido} />
+                          ))}
+                        </div>
+                      </div>
+                    ));
+                  })()
+                ) : (
+                  <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed">
+                    <p className="text-gray-400">
+                      Nenhum pedido no histórico.
+                    </p>
+                  </div>
+                )}
               </ScrollArea>
             </TabsContent>
           </Tabs>
