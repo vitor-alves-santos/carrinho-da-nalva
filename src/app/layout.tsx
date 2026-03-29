@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Carrinho da Nalva",
   description: "Cardápio digital do Carrinho da Nalva. Faça seu pedido online!",
+  icons: {
+    icon: "/favicon-bg.png",
+  },
 };
 
 import { Toaster } from "sonner";
