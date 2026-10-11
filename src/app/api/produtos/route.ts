@@ -13,7 +13,7 @@ export async function GET() {
     const produtos = await db
       .collection("produtos")
       .find({ ativo: true })
-      .sort({ ordem: 1 })
+      .sort({ categoriaPrincipal: 1, subcategoria: 1, ordem: 1 })
       .toArray();
 
     const formattedProdutos = produtos.map((p) => ({
