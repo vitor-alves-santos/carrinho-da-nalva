@@ -33,6 +33,7 @@ import {
   LayoutList,
   Utensils,
   Printer,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import ProductForm from "@/components/ProductForm";
@@ -286,8 +287,27 @@ export default function AdminPage() {
                 variant="outline"
                 size="icon"
                 className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
+                aria-label="Cardápio Físico"
               >
                 <Printer className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/admin/configuracoes">
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
+              >
+                <Settings className="h-4 w-4" />
+                Configurações
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
+                aria-label="Configurações"
+              >
+                <Settings className="h-4 w-4" />
               </Button>
             </Link>
             <Button

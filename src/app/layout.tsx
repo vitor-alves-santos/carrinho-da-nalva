@@ -1,7 +1,21 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 import "./globals.css";
+
+const SETTINGS_ID = new ObjectId("000000000000000000000001");
+
+async function getTema(): Promise<"claro" | "escuro"> {
+  try {
+    const { db } = await connectToDatabase();
+    const doc = await db.collection("configuracoes").findOne({ _id: SETTINGS_ID });
+    return doc?.tema === "escuro" ? "escuro" : "claro";
+  } catch {
+    return "claro";
+  }
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,13 +37,14 @@ export const metadata: Metadata = {
 
 import { Toaster } from "sonner";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tema = await getTema();
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning className={tema === "escuro" ? "dark" : ""}>
       <head>
         {process.env.NODE_ENV === "development" && (
           <Script

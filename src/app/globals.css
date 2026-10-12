@@ -115,6 +115,65 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ============================================================
+   DARK MODE OVERRIDES
+   Remapeia classes hardcoded (bg-white, text-gray-*, etc.)
+   para equivalentes escuros quando .dark está no <html>.
+   Não afeta .sheet (cardápio físico impresso) que tem seu
+   próprio background branco via CSS.
+   ============================================================ */
+.dark {
+  --bg-white: #0a0a0a;
+  --bg-gray-50: #111111;
+  --bg-gray-100: #18181b;
+  --bg-gray-200: #27272a;
+  --bg-gray-300: #3f3f46;
+  --text-gray-900: #fafafa;
+  --text-gray-800: #f4f4f5;
+  --text-gray-700: #e4e4e7;
+  --text-gray-600: #d4d4d8;
+  --text-gray-500: #a1a1aa;
+  --text-gray-400: #71717a;
+  --border-gray-100: rgba(255, 255, 255, 0.06);
+  --border-gray-200: rgba(255, 255, 255, 0.1);
+  --border-gray-300: rgba(255, 255, 255, 0.15);
+}
+
+.dark .bg-white { background-color: var(--bg-white) !important; }
+.dark .bg-gray-50 { background-color: var(--bg-gray-50) !important; }
+.dark .bg-gray-100 { background-color: var(--bg-gray-100) !important; }
+.dark .bg-gray-200 { background-color: var(--bg-gray-200) !important; }
+.dark .bg-gray-300 { background-color: var(--bg-gray-300) !important; }
+
+.dark .text-black { color: #ffffff !important; }
+.dark .text-gray-900 { color: var(--text-gray-900) !important; }
+.dark .text-gray-800 { color: var(--text-gray-800) !important; }
+.dark .text-gray-700 { color: var(--text-gray-700) !important; }
+.dark .text-gray-600 { color: var(--text-gray-600) !important; }
+.dark .text-gray-500 { color: var(--text-gray-500) !important; }
+.dark .text-gray-400 { color: var(--text-gray-400) !important; }
+
+.dark .border-gray-100 { border-color: var(--border-gray-100) !important; }
+.dark .border-gray-200 { border-color: var(--border-gray-200) !important; }
+.dark .border-gray-300 { border-color: var(--border-gray-300) !important; }
+
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--border-gray-200) !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  color: var(--text-gray-100, #f4f4f5);
+  background-color: var(--bg-gray-100, #18181b);
+  border-color: var(--border-gray-200, rgba(255, 255, 255, 0.1));
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-gray-500, #71717a);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
