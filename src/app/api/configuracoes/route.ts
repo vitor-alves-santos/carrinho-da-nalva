@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 
 const SETTINGS_ID = new ObjectId("000000000000000000000001");
 
-export const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS = {
   tema: "claro" as "claro" | "escuro",
   kitRules: [
     "Consumo mínimo: R$150,00",

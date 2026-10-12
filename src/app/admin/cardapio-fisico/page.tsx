@@ -7,19 +7,6 @@ import { Produto } from "@/types/produto";
 import { Button } from "@/components/ui/button";
 
 /* ============================================================
-   CONTEÚDO FIXO DO CARDÁPIO FÍSICO
-   ------------------------------------------------------------
-   KIT TIA NALVA: regras exibidas na face 1 (não é produto do
-   banco — é conteúdo fixo desta página).
-   ============================================================ */
-
-const KIT_RULES = [
-  "Consumo mínimo: R$150,00",
-  "3 cadeiras",
-  "2 guarda-sol",
-];
-
-/* ============================================================
    HELPERS
    ============================================================ */
 
@@ -87,25 +74,25 @@ function TituloSecao({ children }: { children: React.ReactNode }) {
 
 function LinhaItem({ produto }: { produto: Produto }) {
   return (
-    <div className="avoid-break py-[3px]">
+    <div className="avoid-break py-[2px]">
       <div className="flex items-baseline gap-1.5">
-        <span className="text-[12.5px] leading-snug font-medium text-gray-800">
+        <span className="text-[10px] leading-snug font-medium text-gray-800">
           {produto.nome}
         </span>
         {temPreco(produto) ? (
           <>
             <span
               aria-hidden
-              className="flex-1 -translate-y-[3px] border-b border-dotted border-gray-400"
+              className="flex-1 -translate-y-[2px] border-b border-dotted border-gray-400"
             />
-            <span className="text-[12.5px] leading-snug font-semibold text-gray-900 whitespace-nowrap">
+            <span className="text-[10px] leading-snug font-semibold text-gray-900 whitespace-nowrap">
               {formatPrice(produto.preco as number)}
             </span>
           </>
         ) : null}
       </div>
       {produto.descricao ? (
-        <p className="pl-1 text-[10.5px] leading-snug text-gray-500 mt-[1px]">
+        <p className="pl-1 text-[8.5px] leading-snug text-gray-500 mt-[1px]">
           {produto.descricao}
         </p>
       ) : null}
@@ -115,8 +102,8 @@ function LinhaItem({ produto }: { produto: Produto }) {
 
 function BlocoSubcategoria({ titulo, itens }: { titulo: string; itens: Produto[] }) {
   return (
-    <section className="avoid-break mb-2.5">
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#2d9da1] mb-0.5">
+    <section className="avoid-break mb-2">
+      <h3 className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-[#2d9da1] mb-0.5">
         {titulo}
       </h3>
       <div>
@@ -128,7 +115,7 @@ function BlocoSubcategoria({ titulo, itens }: { titulo: string; itens: Produto[]
   );
 }
 
-function BoxKitTiaNalva() {
+function BoxKitTiaNalva({ regras }: { regras: string[] }) {
   return (
     <div className="avoid-break rounded-xl border-2 border-[#2d9da1]/50 px-4 py-3 mt-1">
       <div className="flex items-center justify-between border-b border-gray-300 pb-1.5 mb-2">
@@ -137,7 +124,7 @@ function BoxKitTiaNalva() {
         </h3>
       </div>
       <ul className="text-[11.5px] leading-relaxed text-gray-700">
-        {KIT_RULES.map((regra) => (
+        {regras.map((regra) => (
           <li key={regra} className="flex gap-2">
             <span className="text-[#2d9da1] font-bold">•</span>
             <span>{regra}</span>
@@ -154,6 +141,7 @@ function BoxKitTiaNalva() {
 
 export default function CardapioFisicoPage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [kitRules, setKitRules] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -161,10 +149,17 @@ export default function CardapioFisicoPage() {
     try {
       setError(false);
       setLoading(true);
-      const response = await fetch("/api/produtos");
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
+      const [produtosRes, configuracoesRes] = await Promise.all([
+        fetch("/api/produtos"),
+        fetch("/api/configuracoes"),
+      ]);
+      if (!produtosRes.ok) throw new Error(`HTTP error! status: ${produtosRes.status}`);
+      const data = await produtosRes.json();
       setProdutos(data);
+      if (configuracoesRes.ok) {
+        const cfg = await configuracoesRes.json();
+        setKitRules(Array.isArray(cfg.kitRules) ? cfg.kitRules : []);
+      }
     } catch (err) {
       console.error("Erro ao carregar cardápio físico:", err);
       setError(true);
@@ -204,7 +199,7 @@ export default function CardapioFisicoPage() {
             ))}
           </ul>
         )}
-        <BoxKitTiaNalva />
+        <BoxKitTiaNalva regras={kitRules} />
 
         {gruposBebidas.length > 0 && (
           <>
@@ -222,7 +217,7 @@ export default function CardapioFisicoPage() {
         )}
       </div>
     );
-  }, [recados, bebidas]);
+  }, [recados, bebidas, kitRules]);
 
   /* ---------- Face 2: COMBOS + PORÇÕES ---------- */
   const face2 = useMemo(() => {
@@ -286,7 +281,7 @@ export default function CardapioFisicoPage() {
           <div className="flex items-center gap-3">
             <Printer className="h-8 w-8 text-[#2d9da1] shrink-0" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Cardápio Físico</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Cardápio Físico</h1>
               <p className="text-gray-500">
                 Prévia do cardápio impresso — frente (RECADOS e KIT TIA NALVA +
                 BEBIDAS) e verso (COMBOS + PORÇÕES), direto do catálogo.
@@ -295,7 +290,8 @@ export default function CardapioFisicoPage() {
           </div>
           <Button
             onClick={() => window.print()}
-            className="bg-[#2d9da1] hover:bg-[#258487] text-white shrink-0"
+            disabled={loading || error}
+            className="bg-[#2d9da1] hover:bg-[#258487] text-white shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="h-4 w-4 mr-2" />
             Baixar PDF
@@ -352,7 +348,7 @@ export default function CardapioFisicoPage() {
 
       <style>{`
         .sheet {
-          width: 794px;
+          width: min(794px, 100%);
           min-height: 1123px;
           background: #ffffff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -375,6 +371,16 @@ export default function CardapioFisicoPage() {
           break-inside: avoid;
           page-break-inside: avoid;
         }
+        @media (max-width: 640px) {
+          .sheet {
+            min-height: auto;
+            padding: 20px 16px 18px;
+            border-radius: 8px;
+          }
+          .duas-colunas {
+            column-gap: 15px;
+          }
+        }
         @media print {
           @page {
             size: A4 portrait;
@@ -389,16 +395,23 @@ export default function CardapioFisicoPage() {
           }
           .sheet {
             width: 210mm;
+            height: 296mm;
             min-height: 296mm;
+            max-height: 296mm;
             box-shadow: none;
             border: none;
             border-radius: 0;
             margin: 0;
             padding: 11mm 10mm;
+            overflow: hidden;
           }
           .sheet.face1 {
             page-break-after: always;
             break-after: page;
+          }
+          .sheet.face2 {
+            page-break-before: always;
+            break-before: page;
           }
           .sheet * {
             -webkit-print-color-adjust: exact;

@@ -136,6 +136,7 @@ export default function ConfiguracoesPage() {
                   key={t}
                   type="button"
                   onClick={() => setTema(t)}
+                  aria-pressed={tema === t}
                   className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 p-6 transition-all ${
                     tema === t
                       ? "border-[#2d9da1] bg-[#2d9da1]/5"

@@ -28,8 +28,10 @@ npx react-grab@latest pull --max-age 0
 It blocks until the user grabs something, then prints the new grab(s) — one JSON
 object per line. `--max-age 0` is important: it delivers every grab regardless of
 age, so a comment the user added while you were busy on the previous task isn't
-silently dropped (the default skips grabs older than ~5 min as stale). Act on
-every line. If your shell cancels the command before a grab arrives, just run it
+silently dropped (the default skips grabs older than ~5 min as stale). Account for
+every line, but select the newest grab from the batch and act on it first —
+newer grabs supersede the current task. If your shell cancels the command
+before a grab arrives, just run it
 again — nothing is lost; the watcher keeps capturing in the background and `pull`
 resumes where it left off.
 
@@ -53,8 +55,9 @@ npx react-grab@latest pull --max-age 0 --wait 0
 ```
 
 Empty output means nothing new — keep going. If it prints a grab, the user has
-moved on: stop the current task, cancel any background processes you started for
-it, and act on the newest grab instead.
+moved on: stop the current task, cancel only the task-specific background
+processes you started for it (leave the shared dev server running), and act on
+the newest grab instead.
 
 ## Acting on a grab
 
