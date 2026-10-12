@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Pedido, OrderStatus } from "@/types/pedido";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,23 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   CheckCircle2,
   XCircle,
   Clock,
@@ -17,9 +34,17 @@ import {
   RefreshCw,
   Search,
   MessageCircle,
+  Trash2,
+  ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminNav from "@/components/AdminNav";
+import {
+  currentMonth,
+  formatMonthLabel,
+  monthIndex,
+  monthOf,
+} from "@/lib/date-br";
 import { toast } from "sonner";
 
 const formatPrice = (price: number) => {
@@ -27,6 +52,26 @@ const formatPrice = (price: number) => {
     style: "currency",
     currency: "BRL",
   });
+};
+
+/**
+ * Meses mais recentes que a exclusão nunca atinge.
+ * Regra espelhada na API (fonte de verdade); aqui serve para limitar o seletor.
+ */
+const MESES_PROTEGIDOS = 3;
+
+type PreviaExclusao = {
+  total: number;
+  months: { month: string; count: number }[];
+};
+
+/** "jun/2024 a jun/2026" a partir da lista desc (decrescente) da API. */
+const formatarFaixa = (months: { month: string }[]) => {
+  if (months.length === 0) return "";
+  if (months.length === 1) return formatMonthLabel(months[0].month);
+  return `${formatMonthLabel(months[months.length - 1].month)} a ${formatMonthLabel(
+    months[0].month,
+  )}`;
 };
 
 export default function FilaPedidosPage() {
@@ -38,6 +83,15 @@ export default function FilaPedidosPage() {
   const [filterMesa, setFilterMesa] = useState("");
   const [activeTab, setActiveTab] = useState("pendentes");
   const prevDataStr = useRef<string>("");
+  // Exclusão do histórico (aba Histórico)
+  const [painelExclusaoAberto, setPainelExclusaoAberto] = useState(false);
+  const [mesLimite, setMesLimite] = useState("");
+  const [previa, setPrevia] = useState<PreviaExclusao | null>(null);
+  const [carregandoPrevia, setCarregandoPrevia] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [palavraConfirmacao, setPalavraConfirmacao] = useState("");
+  const [dialogoExclusaoAberto, setDialogoExclusaoAberto] = useState(false);
+  const buscaPreviaIdRef = useRef(0);
   // 🎵 SOM
   const playNotificationSound = () => {
     new Audio(
@@ -111,6 +165,82 @@ export default function FilaPedidosPage() {
     }
   }, []);
 
+  /** Busca a contagem do que seria apagado até `before` (prévia no painel). */
+  const buscarPrevia = useCallback(async (before: string) => {
+    if (!before) {
+      setPrevia(null);
+      setCarregandoPrevia(false);
+      return;
+    }
+
+    const id = ++buscaPreviaIdRef.current;
+    setCarregandoPrevia(true);
+
+    try {
+      const response = await fetch(
+        `/api/pedidos/historico?before=${before}&count=true`,
+      );
+      const data = await response.json();
+
+      // Descarta resposta obsoleta (seleção trocada durante o voo).
+      if (id !== buscaPreviaIdRef.current) return;
+
+      if (response.ok) {
+        setPrevia(data as PreviaExclusao);
+      } else {
+        setPrevia(null);
+        toast.error(data.error || "Não foi possível verificar o impacto.");
+      }
+    } catch {
+      if (id === buscaPreviaIdRef.current) {
+        setPrevia(null);
+        toast.error("Não foi possível verificar o impacto.");
+      }
+    } finally {
+      if (id === buscaPreviaIdRef.current) setCarregandoPrevia(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!painelExclusaoAberto) {
+      setPrevia(null);
+      setCarregandoPrevia(false);
+      return;
+    }
+
+    buscarPrevia(mesLimite);
+  }, [painelExclusaoAberto, mesLimite, buscarPrevia]);
+
+  const excluirHistorico = async () => {
+    if (!mesLimite) return;
+
+    setExcluindo(true);
+    try {
+      const response = await fetch(`/api/pedidos/historico?before=${mesLimite}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Histórico excluído", {
+          description: `${data.deletedCount} pedidos removidos até ${formatMonthLabel(mesLimite)}.`,
+        });
+        setPainelExclusaoAberto(false);
+        setMesLimite("");
+        setPalavraConfirmacao("");
+        setPrevia(null);
+        await fetchHistorico();
+      } else {
+        toast.error(data.error || "Não foi possível excluir o histórico.");
+      }
+    } catch (error) {
+      console.error("Erro ao excluir histórico:", error);
+      toast.error("Não foi possível excluir o histórico.");
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
   useEffect(() => {
     fetchPedidos();
     const interval = setInterval(() => fetchPedidos(true), 10000);
@@ -160,6 +290,42 @@ export default function FilaPedidosPage() {
   const filteredHistorico = pedidosHistorico.filter((pedido) =>
     pedido.mesa.toLowerCase().includes(filterMesa.toLowerCase()),
   );
+
+  /**
+   * Meses realmente disponíveis para exclusão: apenas os que existem no histórico
+   * e que estão fora da janela protegida (3 meses mais recentes).
+   */
+  const mesesElegiveis = useMemo(() => {
+    const limiteMaximo = monthIndex(currentMonth()) - MESES_PROTEGIDOS;
+    const meses = new Set<string>();
+
+    for (const pedido of pedidosHistorico) {
+      const data = new Date(pedido.createdAt);
+      if (Number.isNaN(data.getTime())) continue;
+
+      const mes = monthOf(data);
+      if (monthIndex(mes) <= limiteMaximo) meses.add(mes);
+    }
+
+    return Array.from(meses).sort((a, b) => monthIndex(b) - monthIndex(a));
+  }, [pedidosHistorico]);
+
+  /** Motivo de o controle de exclusão estar indisponível, se houver. */
+  const motivoBloqueio = filterMesa
+    ? "Limpe o filtro de mesa para excluir o histórico."
+    : pedidosHistorico.length === 0
+      ? "Não há histórico para excluir."
+      : mesesElegiveis.length === 0
+        ? "Nenhum mês disponível para exclusão: os últimos 3 meses são sempre preservados."
+        : null;
+
+  const podeExcluir =
+    !motivoBloqueio &&
+    !!mesLimite &&
+    !!previa &&
+    previa.total > 0 &&
+    palavraConfirmacao === "EXCLUIR" &&
+    !excluindo;
 
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
@@ -393,6 +559,103 @@ export default function FilaPedidosPage() {
             </TabsContent>
 
             <TabsContent value="historico">
+              <div className="mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPainelExclusaoAberto((aberto) => !aberto)}
+                  className="border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir histórico
+                  <ChevronDown
+                    className={`h-4 w-4 ml-2 transition-transform ${
+                      painelExclusaoAberto ? "rotate-180" : ""
+                    }`}
+                  />
+                </Button>
+
+                {motivoBloqueio && (
+                  <p className="mt-2 text-xs text-gray-500">{motivoBloqueio}</p>
+                )}
+
+                {painelExclusaoAberto && (
+                  <div className="mt-3 rounded-xl border border-red-200 bg-white p-4 space-y-4">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-gray-900">
+                        Apagar tudo antes de...
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Remove em definitivo os pedidos de todos os meses anteriores
+                        ao selecionado. Os {MESES_PROTEGIDOS} meses mais recentes
+                        são sempre preservados.
+                      </p>
+                    </div>
+
+                    <Select value={mesLimite} onValueChange={setMesLimite}>
+                      <SelectTrigger className="w-full sm:w-64">
+                        <SelectValue placeholder="Escolha um mês limite" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {mesesElegiveis.map((mes) => (
+                          <SelectItem key={mes} value={mes}>
+                            {formatMonthLabel(mes)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {carregandoPrevia ? (
+                      <p className="text-xs text-gray-500">
+                        Verificando o impacto...
+                      </p>
+                    ) : previa && previa.total > 0 ? (
+                      <p className="text-sm text-gray-700">
+                        <strong>{previa.total}</strong> pedidos de{" "}
+                        <strong>{formatarFaixa(previa.months)}</strong> serão
+                        apagados.
+                      </p>
+                    ) : previa ? (
+                      <p className="text-xs text-gray-500">
+                        Não há pedidos neste período para excluir.
+                      </p>
+                    ) : null}
+
+                    <div className="space-y-1">
+                      <label
+                        htmlFor="confirmacao-exclusao-historico"
+                        className="text-xs font-medium text-gray-700"
+                      >
+                        Digite <span className="font-bold">EXCLUIR</span> para
+                        confirmar
+                      </label>
+                      <Input
+                        id="confirmacao-exclusao-historico"
+                        value={palavraConfirmacao}
+                        onChange={(e) => setPalavraConfirmacao(e.target.value)}
+                        placeholder="EXCLUIR"
+                        className="max-w-xs"
+                        autoComplete="off"
+                      />
+                    </div>
+
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={!podeExcluir}
+                      onClick={() => setDialogoExclusaoAberto(true)}
+                    >
+                      {excluindo ? (
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 mr-2" />
+                      )}
+                      Excluir histórico
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <ScrollArea className="pr-4">
                 {loadingHistory ? (
                   <div className="flex flex-col items-center justify-center py-10">
@@ -448,6 +711,37 @@ export default function FilaPedidosPage() {
             </TabsContent>
           </Tabs>
         )}
+
+        <AlertDialog
+          open={dialogoExclusaoAberto}
+          onOpenChange={setDialogoExclusaoAberto}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir histórico em definitivo?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {previa && previa.total > 0 ? (
+                  <>
+                    Serão apagados <strong>{previa.total}</strong> pedidos de{" "}
+                    <strong>{formatarFaixa(previa.months)}</strong>. Esta ação não
+                    pode ser desfeita.
+                  </>
+                ) : (
+                  <>Esta ação não pode ser desfeita.</>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 text-white hover:bg-red-700"
+                onClick={excluirHistorico}
+              >
+                Excluir definitivamente
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
