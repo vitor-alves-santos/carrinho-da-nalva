@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Produto } from "@/types/produto";
 import { Button } from "@/components/ui/button";
@@ -25,18 +25,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  LogOut,
-  LayoutList,
-  Utensils,
-  Printer,
-  Settings,
-} from "lucide-react";
-import Link from "next/link";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import ProductForm from "@/components/ProductForm";
+import AdminNav from "@/components/AdminNav";
 import posthog from "posthog-js";
 
 const CATEGORIAS_PRINCIPAIS = ["BEBIDAS", "PORÇÕES", "COMBOS", "RECADOS"];
@@ -261,89 +252,7 @@ export default function AdminPage() {
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="flex items-center justify-between py-4 px-1 md:px-4">
           <h1 className="text-lg font-semibold ml-1.5">Gerenciar Cardápio</h1>
-          <div className="flex items-center gap-0.5">
-            <Link href="/admin/fila">
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
-              >
-                <LayoutList className="h-4 w-4" />
-                Fila de Pedidos
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
-              >
-                <LayoutList className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/">
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
-              >
-                <Utensils className="h-4 w-4" />
-                Cardápio
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
-              >
-                <Utensils className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/admin/cardapio-fisico">
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
-              >
-                <Printer className="h-4 w-4" />
-                Cardápio Físico
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
-                aria-label="Cardápio Físico"
-              >
-                <Printer className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/admin/configuracoes">
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
-              >
-                <Settings className="h-4 w-4" />
-                Configurações
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="sm:hidden border-[#2d9da1] text-[#2d9da1]"
-                aria-label="Configurações"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                posthog.capture("admin_logged_out");
-                posthog.reset();
-                signOut();
-              }}
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
-          </div>
+          <AdminNav />
         </div>
       </header>
 

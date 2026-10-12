@@ -16,11 +16,10 @@ import {
   UtensilsCrossed,
   RefreshCw,
   Search,
-  ArrowLeft,
   MessageCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import AdminNav from "@/components/AdminNav";
 import { toast } from "sonner";
 
 const formatPrice = (price: number) => {
@@ -284,17 +283,8 @@ export default function FilaPedidosPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
-        <div>
-          <Link href="/admin">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-500 hover:text-[#2d9da1] p-0"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Painel do Cardápio
-            </Button>
-          </Link>
+        <div className="flex justify-end">
+          <AdminNav />
         </div>
         <header className="flex flex-col md:flex-row md:items-center justify-between">
           <div>

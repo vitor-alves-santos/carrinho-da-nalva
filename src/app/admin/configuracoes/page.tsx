@@ -3,17 +3,8 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Sun,
-  Moon,
-  Plus,
-  Trash2,
-  Save,
-  Loader2,
-  Info,
-} from "lucide-react";
+import { Sun, Moon, Plus, Trash2, Save, Loader2, Info } from "lucide-react";
+import AdminNav from "@/components/AdminNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -133,19 +124,9 @@ export default function ConfiguracoesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="flex items-center justify-between py-4 px-4">
-          <Link href="/admin">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-500 hover:text-[#2d9da1] p-0"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Painel
-            </Button>
-          </Link>
+        <div className="flex items-center justify-between gap-2 py-4 px-4">
           <h1 className="text-lg font-semibold">Configurações</h1>
-          <div className="w-[120px]" />
+          <AdminNav />
         </div>
       </header>
 

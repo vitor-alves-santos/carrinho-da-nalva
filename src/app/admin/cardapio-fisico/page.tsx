@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Printer, Info, Download } from "lucide-react";
+import { Printer, Info, Download } from "lucide-react";
+import AdminNav from "@/components/AdminNav";
 import { Produto } from "@/types/produto";
 import { Button } from "@/components/ui/button";
 
@@ -287,17 +287,8 @@ export default function CardapioFisicoPage() {
     <main className="min-h-screen bg-gray-50 py-6 md:py-10 print:bg-white print:py-0">
       {/* Chrome da tela — escondido na impressão */}
       <div className="no-print mx-auto max-w-4xl px-6 mb-10">
-        <div>
-          <Link href="/admin">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-500 hover:text-[#2d9da1] p-0"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Painel do Cardápio
-            </Button>
-          </Link>
+        <div className="flex justify-end">
+          <AdminNav />
         </div>
         <header className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between mt-2">
           <div className="flex items-center gap-3">
