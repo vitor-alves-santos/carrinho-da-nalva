@@ -156,10 +156,9 @@ export default function CardapioFisicoPage() {
       if (!produtosRes.ok) throw new Error(`HTTP error! status: ${produtosRes.status}`);
       const data = await produtosRes.json();
       setProdutos(data);
-      if (configuracoesRes.ok) {
-        const cfg = await configuracoesRes.json();
-        setKitRules(Array.isArray(cfg.kitRules) ? cfg.kitRules : []);
-      }
+      if (!configuracoesRes.ok) throw new Error(`HTTP error! status: ${configuracoesRes.status}`);
+      const cfg = await configuracoesRes.json();
+      setKitRules(Array.isArray(cfg.kitRules) ? cfg.kitRules : []);
     } catch (err) {
       console.error("Erro ao carregar cardápio físico:", err);
       setError(true);

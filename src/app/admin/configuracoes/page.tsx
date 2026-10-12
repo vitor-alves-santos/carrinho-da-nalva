@@ -4,7 +4,16 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Sun, Moon, Plus, Trash2, Save, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Sun,
+  Moon,
+  Plus,
+  Trash2,
+  Save,
+  Loader2,
+  Info,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +32,7 @@ type Tema = "claro" | "escuro";
 interface Configuracoes {
   tema: Tema;
   kitRules: string[];
+  avisos: string[];
 }
 
 export default function ConfiguracoesPage() {
@@ -31,6 +41,7 @@ export default function ConfiguracoesPage() {
 
   const [tema, setTema] = useState<Tema>("claro");
   const [kitRules, setKitRules] = useState<string[]>([]);
+  const [avisos, setAvisos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -48,6 +59,7 @@ export default function ConfiguracoesPage() {
       const data: Configuracoes = await res.json();
       setTema(data.tema);
       setKitRules(data.kitRules);
+      setAvisos(data.avisos ?? []);
     } catch (err) {
       console.error(err);
       toast.error("Não foi possível carregar as configurações.");
@@ -66,7 +78,7 @@ export default function ConfiguracoesPage() {
       const res = await fetch("/api/configuracoes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tema, kitRules }),
+        body: JSON.stringify({ tema, kitRules, avisos }),
       });
       if (!res.ok) throw new Error("Erro ao salvar");
       toast.success("Configurações salvas com sucesso!");
@@ -87,6 +99,15 @@ export default function ConfiguracoesPage() {
 
   const removeRule = (index: number) =>
     setKitRules((prev) => prev.filter((_, i) => i !== index));
+
+  const updateAviso = (index: number, value: string) => {
+    setAvisos((prev) => prev.map((a, i) => (i === index ? value : a)));
+  };
+
+  const addAviso = () => setAvisos((prev) => [...prev, ""]);
+
+  const removeAviso = (index: number) =>
+    setAvisos((prev) => prev.filter((_, i) => i !== index));
 
   if (status === "loading" || loading) {
     return (
@@ -152,6 +173,54 @@ export default function ConfiguracoesPage() {
                 </button>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Avisos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-[#2d9da1]" />
+              Avisos
+            </CardTitle>
+            <CardDescription>
+              Estes avisos aparecem no cardápio digital, logo abaixo dos itens
+              da seção RECADOS. Adicione, edite ou remova itens.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {avisos.map((aviso, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <span className="text-[#2d9da1] font-bold shrink-0 w-5 text-right">
+                  •
+                </span>
+                <Input
+                  value={aviso}
+                  onChange={(e) => updateAviso(index, e.target.value)}
+                  placeholder="Ex: Será cobrado a taxa de serviço 10%"
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => removeAviso(index)}
+                  aria-label="Remover aviso"
+                  className="shrink-0"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              </div>
+            ))}
+            <Separator />
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
+              onClick={addAviso}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Aviso
+            </Button>
           </CardContent>
         </Card>
 
