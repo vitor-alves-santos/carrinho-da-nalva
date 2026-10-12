@@ -66,23 +66,45 @@ export default function AdminPage() {
     }
   }, [status, router]);
 
-  useEffect(() => {
-    if (session) {
-      fetchProdutos();
-    }
-  }, [session]);
+  const buscarProdutos = async (): Promise<Produto[]> => {
+    const response = await fetch("/api/produtos/admin");
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+  };
 
   const fetchProdutos = async () => {
     try {
-      const response = await fetch("/api/produtos/admin");
-      const data = await response.json();
-      setProdutos(data);
+      setProdutos(await buscarProdutos());
     } catch (error) {
       console.error("Error fetching produtos:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Carrega os produtos quando a sessão fica disponível. O estado é atualizado
+  // dentro dos callbacks da promise (não no corpo do efeito), que é o padrão
+  // recomendado pelo React para efeitos de carregamento de dados.
+  useEffect(() => {
+    if (!session) return;
+
+    let ativo = true;
+
+    buscarProdutos()
+      .then((data) => {
+        if (ativo) setProdutos(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching produtos:", error);
+      })
+      .finally(() => {
+        if (ativo) setLoading(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [session]);
 
   const handleAddProduto = async () => {
     try {

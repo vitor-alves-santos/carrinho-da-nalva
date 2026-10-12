@@ -145,20 +145,28 @@ export default function CardapioFisicoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const carregarDados = async () => {
+    const [produtosRes, configuracoesRes] = await Promise.all([
+      fetch("/api/produtos"),
+      fetch("/api/configuracoes"),
+    ]);
+    if (!produtosRes.ok) throw new Error(`HTTP error! status: ${produtosRes.status}`);
+    const data: Produto[] = await produtosRes.json();
+    if (!configuracoesRes.ok) throw new Error(`HTTP error! status: ${configuracoesRes.status}`);
+    const cfg = await configuracoesRes.json();
+    return {
+      produtos: data,
+      kitRules: Array.isArray(cfg.kitRules) ? (cfg.kitRules as string[]) : [],
+    };
+  };
+
+  // Usado pelo botão "Tentar novamente" (handler de evento).
   const fetchProdutos = async () => {
     try {
+      const { produtos: lista, kitRules: regras } = await carregarDados();
+      setProdutos(lista);
+      setKitRules(regras);
       setError(false);
-      setLoading(true);
-      const [produtosRes, configuracoesRes] = await Promise.all([
-        fetch("/api/produtos"),
-        fetch("/api/configuracoes"),
-      ]);
-      if (!produtosRes.ok) throw new Error(`HTTP error! status: ${produtosRes.status}`);
-      const data = await produtosRes.json();
-      setProdutos(data);
-      if (!configuracoesRes.ok) throw new Error(`HTTP error! status: ${configuracoesRes.status}`);
-      const cfg = await configuracoesRes.json();
-      setKitRules(Array.isArray(cfg.kitRules) ? cfg.kitRules : []);
     } catch (err) {
       console.error("Erro ao carregar cardápio físico:", err);
       setError(true);
@@ -167,8 +175,29 @@ export default function CardapioFisicoPage() {
     }
   };
 
+  // Carregamento inicial. O estado é atualizado dentro dos callbacks da promise
+  // (não no corpo do efeito), que é o padrão recomendado pelo React.
   useEffect(() => {
-    fetchProdutos();
+    let ativo = true;
+
+    carregarDados()
+      .then(({ produtos: lista, kitRules: regras }) => {
+        if (!ativo) return;
+        setProdutos(lista);
+        setKitRules(regras);
+        setError(false);
+      })
+      .catch((err) => {
+        console.error("Erro ao carregar cardápio físico:", err);
+        if (ativo) setError(true);
+      })
+      .finally(() => {
+        if (ativo) setLoading(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
   }, []);
 
   const { recados, bebidas, combos, porcoes } = useMemo(() => {
@@ -254,12 +283,6 @@ export default function CardapioFisicoPage() {
     );
   }, [combos, porcoes]);
 
-  const EtiquetaFace = ({ children }: { children: React.ReactNode }) => (
-    <p className="no-print text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2 text-center">
-      {children}
-    </p>
-  );
-
   return (
     <main className="min-h-screen bg-gray-50 py-6 md:py-10 print:bg-white print:py-0">
       {/* Chrome da tela — escondido na impressão */}
@@ -323,7 +346,11 @@ export default function CardapioFisicoPage() {
           <Button
             variant="outline"
             className="border-[#2d9da1] text-[#2d9da1] hover:bg-[#2d9da1] hover:text-white"
-            onClick={fetchProdutos}
+            onClick={() => {
+              setError(false);
+              setLoading(true);
+              void fetchProdutos();
+            }}
           >
             Tentar novamente
           </Button>
@@ -331,15 +358,15 @@ export default function CardapioFisicoPage() {
       ) : (
         <div className="flex flex-col items-center gap-10 px-4 pb-16 print:gap-0 print:p-0">
           <div className="flex flex-col items-center print:contents">
-            <EtiquetaFace>
+            <p className="no-print text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2 text-center">
               Frente — RECADOS e KIT TIA NALVA + BEBIDAS (página 1)
-            </EtiquetaFace>
+            </p>
             {face1}
           </div>
           <div className="flex flex-col items-center print:contents">
-            <EtiquetaFace>
+            <p className="no-print text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2 text-center">
               Verso — COMBOS + PORÇÕES (página 2)
-            </EtiquetaFace>
+            </p>
             {face2}
           </div>
         </div>

@@ -6,7 +6,6 @@ import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import posthog from "posthog-js";
 
 interface ProductCardProps {

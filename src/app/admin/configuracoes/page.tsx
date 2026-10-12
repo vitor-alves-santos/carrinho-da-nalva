@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import {
   Card,
   CardContent,
@@ -51,25 +51,36 @@ export default function ConfiguracoesPage() {
     }
   }, [status, router]);
 
-  const fetchConfiguracoes = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/configuracoes");
-      if (!res.ok) throw new Error("Erro ao carregar configurações");
-      const data: Configuracoes = await res.json();
-      setTema(data.tema);
-      setKitRules(data.kitRules);
-      setAvisos(data.avisos ?? []);
-    } catch (err) {
-      console.error(err);
-      toast.error("Não foi possível carregar as configurações.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Busca as configurações quando a sessão fica disponível. O estado é
+  // atualizado dentro dos callbacks da promise (não no corpo do efeito), que é
+  // o padrão recomendado pelo React para efeitos de carregamento de dados.
   useEffect(() => {
-    if (session) fetchConfiguracoes();
+    if (!session) return;
+
+    let ativo = true;
+
+    fetch("/api/configuracoes")
+      .then((res) => {
+        if (!res.ok) throw new Error("Erro ao carregar configurações");
+        return res.json() as Promise<Configuracoes>;
+      })
+      .then((data) => {
+        if (!ativo) return;
+        setTema(data.tema);
+        setKitRules(data.kitRules);
+        setAvisos(data.avisos ?? []);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (ativo) toast.error("Não foi possível carregar as configurações.");
+      })
+      .finally(() => {
+        if (ativo) setLoading(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
   }, [session]);
 
   const handleSave = async () => {
