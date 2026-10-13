@@ -30,7 +30,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  UtensilsCrossed,
+  LayoutList,
   RefreshCw,
   Search,
   MessageCircle,
@@ -454,8 +454,8 @@ export default function FilaPedidosPage() {
         </div>
         <header className="flex flex-col md:flex-row md:items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <UtensilsCrossed className="h-8 w-8 text-[#2d9da1]" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <LayoutList aria-hidden className="h-8 w-8 text-[#2d9da1]" />
               Fila de Pedidos
             </h1>
             <p className="text-gray-500">Gerencie os pedidos em tempo real</p>

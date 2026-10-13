@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Sun, Moon, Plus, Trash2, Save, Loader2, Info } from "lucide-react";
+import { Sun, Moon, Plus, Trash2, Save, Loader2, Info, Settings } from "lucide-react";
 import AdminNav from "@/components/AdminNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,9 +124,17 @@ export default function ConfiguracoesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="flex items-center justify-between gap-2 py-4 px-4">
-          <h1 className="text-lg font-semibold">Configurações</h1>
+        <div className="flex justify-end pt-4 px-4">
           <AdminNav />
+        </div>
+        <div className="px-4 mt-2 pb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <Settings aria-hidden className="h-8 w-8 text-[#2d9da1]" />
+            Configurações
+          </h1>
+          <p className="text-gray-500">
+            Personalize o visual e as regras do seu cardápio
+          </p>
         </div>
       </header>
 
