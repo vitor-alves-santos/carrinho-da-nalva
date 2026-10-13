@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, ClipboardList } from "lucide-react";
 import ProductForm from "@/components/ProductForm";
 import AdminNav from "@/components/AdminNav";
 import posthog from "posthog-js";
@@ -250,9 +250,15 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="flex items-center justify-between py-4 px-1 md:px-4">
-          <h1 className="text-lg font-semibold ml-1.5">Gerenciar Cardápio</h1>
+        <div className="flex justify-end pt-4 px-1 md:px-4">
           <AdminNav />
+        </div>
+        <div className="px-1 md:px-4 mt-2 pb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <ClipboardList aria-hidden className="h-8 w-8 text-[#2d9da1]" />
+            Gerenciar Cardápio
+          </h1>
+          <p className="text-gray-500">Organize seu cardápio com facilidade</p>
         </div>
       </header>
 

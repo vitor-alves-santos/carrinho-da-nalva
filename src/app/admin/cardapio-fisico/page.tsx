@@ -291,15 +291,15 @@ export default function CardapioFisicoPage() {
           <AdminNav />
         </div>
         <header className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between mt-2">
-          <div className="flex items-center gap-3">
-            <Printer className="h-8 w-8 text-[#2d9da1] shrink-0" />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Cardápio Físico</h1>
-              <p className="text-gray-500">
-                Prévia do cardápio impresso — frente (RECADOS e KIT TIA NALVA +
-                BEBIDAS) e verso (COMBOS + PORÇÕES), direto do catálogo.
-              </p>
-            </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <Printer aria-hidden className="h-8 w-8 text-[#2d9da1] shrink-0" />
+              Cardápio Físico
+            </h1>
+            <p className="text-gray-500">
+              Prévia do cardápio impresso — frente (RECADOS e KIT TIA NALVA +
+              BEBIDAS) e verso (COMBOS + PORÇÕES), direto do catálogo.
+            </p>
           </div>
           <Button
             onClick={() => window.print()}
